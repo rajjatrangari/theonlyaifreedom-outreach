@@ -39,7 +39,7 @@ function render_layout(string $title, string $activePage, string $content, ?arra
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/assets/css/app.css?v=9">
+    <link rel="stylesheet" href="/assets/css/app.css?v=10">
     <script src="/assets/js/theme.js?v=9"></script>
     <script>
         tailwind.config = {

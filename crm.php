@@ -12,6 +12,13 @@ $userId = (int)$user['id'];
 $viewMode = $_GET['view'] ?? 'kanban';
 $searchQuery = trim($_GET['q'] ?? '');
 $filterDue = isset($_GET['filter']) && $_GET['filter'] === 'due';
+$selectedCategory = trim($_GET['category'] ?? '');
+$selectedCity = trim($_GET['city'] ?? '');
+
+// Fetch category and city aggregates for instant filtering
+$availableCategories = all("SELECT category, COUNT(*) as cnt FROM leads WHERE user_id = ? AND category IS NOT NULL AND category != '' GROUP BY category ORDER BY cnt DESC", [$userId]);
+$availableCities = all("SELECT city, COUNT(*) as cnt FROM leads WHERE user_id = ? AND city IS NOT NULL AND city != '' GROUP BY city ORDER BY cnt DESC", [$userId]);
+$totalLeadsCount = (int)val("SELECT COUNT(*) FROM leads WHERE user_id = ?", [$userId]);
 
 // Query leads
 $sql = "SELECT * FROM leads WHERE user_id = ?";
@@ -23,6 +30,16 @@ if (!empty($searchQuery)) {
     $params[] = $like;
     $params[] = $like;
     $params[] = $like;
+}
+
+if (!empty($selectedCategory)) {
+    $sql .= " AND category = ?";
+    $params[] = $selectedCategory;
+}
+
+if (!empty($selectedCity)) {
+    $sql .= " AND city LIKE ?";
+    $params[] = "%{$selectedCity}%";
 }
 
 if ($filterDue) {
@@ -47,63 +64,155 @@ foreach ($allLeads as $lead) {
     }
 }
 
+// Build query helper for URL parameters
+function filterUrl(array $overrides = []): string {
+    global $viewMode, $searchQuery, $filterDue, $selectedCategory, $selectedCity;
+    $params = [
+        'view' => $viewMode,
+        'q' => $searchQuery,
+        'filter' => $filterDue ? 'due' : '',
+        'category' => $selectedCategory,
+        'city' => $selectedCity,
+    ];
+    $merged = array_merge($params, $overrides);
+    $filtered = array_filter($merged, fn($v) => $v !== '' && $v !== null);
+    return '/crm.php?' . http_build_query($filtered);
+}
+
 ob_start();
 ?>
 
 <div class="space-y-6">
     
     <!-- Top Filter & Action Bar -->
-    <div class="glass-panel rounded-2xl p-4 border border-white/[0.08] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="glass-panel rounded-2xl p-4 border border-white/[0.08] flex flex-col gap-4">
         
-        <!-- Search & Filter Options -->
-        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <form method="GET" class="relative w-full sm:w-64">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <!-- Search & Filter Options Form -->
+            <form method="GET" action="/crm.php" class="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
                 <input type="hidden" name="view" value="<?= h($viewMode) ?>">
                 <?php if ($filterDue): ?><input type="hidden" name="filter" value="due"><?php endif; ?>
-                <i data-lucide="search" class="w-4 h-4 text-[#a3a6b0] absolute left-3 top-2.5"></i>
-                <input type="text" name="q" value="<?= h($searchQuery) ?>" placeholder="Search prospects by name, city..." 
-                       class="w-full bg-[#11141c] border border-white/[0.08] rounded-xl pl-9 pr-3 py-2 text-xs text-[#f4f1ea] placeholder-[#6e7280] focus:outline-none focus:border-[#d9b46c]">
+
+                <!-- Keyword / Prospect Search Input -->
+                <div class="relative w-full sm:w-56">
+                    <i data-lucide="search" class="w-4 h-4 text-[#a3a6b0] absolute left-3 top-2.5"></i>
+                    <input type="text" name="q" value="<?= h($searchQuery) ?>" placeholder="Search prospects, city..." 
+                           class="w-full bg-[#11141c] border border-white/[0.08] rounded-xl pl-9 pr-3 py-2 text-xs text-[#f4f1ea] placeholder-[#6e7280] focus:outline-none focus:border-[#d9b46c]">
+                </div>
+
+                <!-- Category-wise Filter -->
+                <div class="w-full sm:w-auto">
+                    <select name="category" onchange="this.form.submit()" 
+                            class="w-full sm:w-auto bg-[#11141c] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-[#f4f1ea] focus:outline-none focus:border-[#d9b46c]">
+                        <option value="">📂 All Categories (<?= $totalLeadsCount ?>)</option>
+                        <?php foreach ($availableCategories as $catItem): ?>
+                            <option value="<?= h($catItem['category']) ?>" <?= $selectedCategory === $catItem['category'] ? 'selected' : '' ?>>
+                                <?= h($catItem['category']) ?> (<?= (int)$catItem['cnt'] ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Location-wise Filter -->
+                <div class="w-full sm:w-auto">
+                    <select name="city" onchange="this.form.submit()" 
+                            class="w-full sm:w-auto bg-[#11141c] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-[#f4f1ea] focus:outline-none focus:border-[#d9b46c]">
+                        <option value="">📍 All Locations (<?= count($availableCities) ?> Cities)</option>
+                        <?php foreach ($availableCities as $cityItem): ?>
+                            <option value="<?= h($cityItem['city']) ?>" <?= $selectedCity === $cityItem['city'] ? 'selected' : '' ?>>
+                                <?= h($cityItem['city']) ?> (<?= (int)$cityItem['cnt'] ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Due Follow-ups Toggle -->
+                <a href="<?= filterUrl(['filter' => $filterDue ? '' : 'due']) ?>" 
+                   class="px-3 py-2 rounded-xl text-xs font-semibold border transition flex items-center gap-1.5 <?= $filterDue ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-white/[0.04] text-[#a3a6b0] border-white/[0.08] hover:text-[#f4f1ea]' ?>">
+                    <i data-lucide="bell" class="w-3.5 h-3.5 <?= $filterDue ? 'text-rose-400 animate-bounce' : '' ?>"></i>
+                    <span>Due Follow-ups</span>
+                </a>
+
+                <?php if (!empty($searchQuery) || !empty($selectedCategory) || !empty($selectedCity) || $filterDue): ?>
+                    <a href="/crm.php?view=<?= h($viewMode) ?>" class="text-xs text-[#d9b46c] hover:underline flex items-center gap-1 font-bold ml-1">
+                        <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                        <span>Reset Filters</span>
+                    </a>
+                <?php endif; ?>
             </form>
 
-            <a href="/crm.php?view=<?= $viewMode ?><?= $filterDue ? '' : '&filter=due' ?>" 
-               class="px-3 py-2 rounded-xl text-xs font-semibold border transition flex items-center gap-1.5 <?= $filterDue ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-white/[0.04] text-[#a3a6b0] border-white/[0.08] hover:text-[#f4f1ea]' ?>">
-                <i data-lucide="bell" class="w-3.5 h-3.5 <?= $filterDue ? 'text-rose-400 animate-bounce' : '' ?>"></i>
-                <span>Due Follow-ups</span>
-            </a>
+            <!-- View Switcher & Action Buttons -->
+            <div class="flex items-center gap-2.5 w-full lg:w-auto justify-end flex-wrap">
+                <!-- Kanban / Table View Toggle -->
+                <div class="p-1 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center">
+                    <a href="<?= filterUrl(['view' => 'kanban']) ?>" title="Kanban Board View" 
+                       class="p-1.5 rounded-lg text-xs font-medium transition <?= $viewMode === 'kanban' ? 'btn-gold-cta text-black shadow' : 'text-[#a3a6b0] hover:text-white' ?>">
+                        <i data-lucide="kanban" class="w-4 h-4"></i>
+                    </a>
+                    <a href="<?= filterUrl(['view' => 'table']) ?>" title="Table View" 
+                       class="p-1.5 rounded-lg text-xs font-medium transition <?= $viewMode === 'table' ? 'btn-gold-cta text-black shadow' : 'text-[#a3a6b0] hover:text-white' ?>">
+                        <i data-lucide="table" class="w-4 h-4"></i>
+                    </a>
+                </div>
 
-            <?php if (!empty($searchQuery) || $filterDue): ?>
-                <a href="/crm.php?view=<?= h($viewMode) ?>" class="text-xs text-[#a3a6b0] hover:text-[#f4f1ea] flex items-center gap-1">
-                    <i data-lucide="x" class="w-3 h-3"></i>
-                    <span>Clear Filter</span>
+                <a href="/api.php?action=export_leads_csv" class="px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#a3a6b0] hover:text-[#f4f1ea] text-xs font-medium border border-white/[0.08] flex items-center gap-1.5 transition">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                    <span>Export CSV</span>
                 </a>
-            <?php endif; ?>
-        </div>
 
-        <!-- View Switcher & Export -->
-        <div class="flex items-center gap-3 w-full md:w-auto justify-end">
-            
-            <!-- Kanban / Table View Toggle -->
-            <div class="p-1 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center">
-                <a href="/crm.php?view=kanban<?= $filterDue ? '&filter=due' : '' ?>" title="Kanban Board View" 
-                   class="p-1.5 rounded-lg text-xs font-medium transition <?= $viewMode === 'kanban' ? 'btn-gold-cta text-black shadow' : 'text-[#a3a6b0] hover:text-white' ?>">
-                    <i data-lucide="kanban" class="w-4 h-4"></i>
-                </a>
-                <a href="/crm.php?view=table<?= $filterDue ? '&filter=due' : '' ?>" title="Table View" 
-                   class="p-1.5 rounded-lg text-xs font-medium transition <?= $viewMode === 'table' ? 'btn-gold-cta text-black shadow' : 'text-[#a3a6b0] hover:text-white' ?>">
-                    <i data-lucide="table" class="w-4 h-4"></i>
+                <a href="/scraper.php" class="btn-gold-cta px-4 py-2 rounded-xl text-black text-xs font-extrabold shadow-lg flex items-center gap-1.5 transition">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Scrape More</span>
                 </a>
             </div>
-
-            <a href="/api.php?action=export_leads_csv" class="px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#a3a6b0] hover:text-[#f4f1ea] text-xs font-medium border border-white/[0.08] flex items-center gap-1.5 transition">
-                <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                <span>Export CSV</span>
-            </a>
-
-            <a href="/scraper.php" class="btn-gold-cta px-4 py-2 rounded-xl text-black text-xs font-extrabold shadow-lg flex items-center gap-1.5 transition">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-                <span>Scrape More</span>
-            </a>
         </div>
+
+        <!-- Quick Category & Location Chips Bar (if multiple exist) -->
+        <?php if (!empty($availableCategories) || !empty($availableCities)): ?>
+            <div class="pt-3 border-t border-white/[0.06] flex items-center gap-2 flex-wrap text-xs">
+                <span class="text-[11px] font-bold text-[#a3a6b0] uppercase tracking-wider flex items-center gap-1 mr-1">
+                    <i data-lucide="layers" class="w-3.5 h-3.5 text-[#d9b46c]"></i>
+                    <span>Browse By:</span>
+                </span>
+
+                <!-- All Leads Chip -->
+                <a href="<?= filterUrl(['category' => '', 'city' => '']) ?>" 
+                   class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1 <?= (empty($selectedCategory) && empty($selectedCity)) ? 'bg-[#d9b46c] text-black shadow-sm' : 'bg-white/[0.04] text-[#a3a6b0] hover:text-[#f4f1ea] border border-white/[0.08]' ?>">
+                    <span>All Leads</span>
+                    <span class="opacity-75 font-mono">(<?= $totalLeadsCount ?>)</span>
+                </a>
+
+                <!-- Top Categories -->
+                <?php foreach (array_slice($availableCategories, 0, 5) as $catChip): 
+                    $isActive = ($selectedCategory === $catChip['category']);
+                ?>
+                    <a href="<?= filterUrl(['category' => $isActive ? '' : $catChip['category']]) ?>" 
+                       class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1 <?= $isActive ? 'bg-[#d9b46c] text-black shadow-sm' : 'bg-white/[0.04] text-[#a3a6b0] hover:text-[#f4f1ea] border border-white/[0.08]' ?>"
+                       title="Filter category: <?= h($catChip['category']) ?>">
+                        <span><?= h($catChip['category']) ?></span>
+                        <span class="opacity-75 font-mono">(<?= (int)$catChip['cnt'] ?>)</span>
+                    </a>
+                <?php endforeach; ?>
+
+                <!-- Top Cities -->
+                <?php foreach (array_slice($availableCities, 0, 4) as $cityChip): 
+                    $isCityActive = ($selectedCity === $cityChip['city']);
+                ?>
+                    <a href="<?= filterUrl(['city' => $isCityActive ? '' : $cityChip['city']]) ?>" 
+                       class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1 <?= $isCityActive ? 'bg-emerald-500 text-black shadow-sm font-extrabold' : 'bg-white/[0.04] text-[#a3a6b0] hover:text-[#f4f1ea] border border-white/[0.08]' ?>"
+                       title="Filter city: <?= h($cityChip['city']) ?>">
+                        <i data-lucide="map-pin" class="w-3 h-3 text-emerald-400"></i>
+                        <span><?= h($cityChip['city']) ?></span>
+                        <span class="opacity-75 font-mono">(<?= (int)$cityChip['cnt'] ?>)</span>
+                    </a>
+                <?php endforeach; ?>
+
+                <div class="ml-auto text-[11px] text-[#a3a6b0] font-mono">
+                    Showing <strong class="text-[#f4f1ea]"><?= count($allLeads) ?></strong> of <?= $totalLeadsCount ?> leads
+                </div>
+            </div>
+        <?php endif; ?>
+
     </div>
 
     <?php if ($viewMode === 'kanban'): ?>

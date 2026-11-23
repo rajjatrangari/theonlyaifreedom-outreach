@@ -9,8 +9,11 @@ $user = require_auth();
 $userId = (int)$user['id'];
 
 // Initial load: Fetch saved CRM leads to display in "Saved in CRM" tab
-$crmLeads = all("SELECT * FROM leads WHERE user_id = ? ORDER BY id DESC LIMIT 100", [$userId]);
-$savedSearches = all("SELECT * FROM saved_searches WHERE user_id = ? ORDER BY id DESC LIMIT 5", [$userId]);
+$crmLeads = all("SELECT * FROM leads WHERE user_id = ? ORDER BY id DESC LIMIT 500", [$userId]);
+$savedSearches = all("SELECT * FROM saved_searches WHERE user_id = ? ORDER BY id DESC LIMIT 15", [$userId]);
+$allCategories = all("SELECT category, COUNT(*) as cnt FROM leads WHERE user_id = ? AND category IS NOT NULL AND category != '' GROUP BY category ORDER BY cnt DESC", [$userId]);
+$allCities = all("SELECT city, COUNT(*) as cnt FROM leads WHERE user_id = ? AND city IS NOT NULL AND city != '' GROUP BY city ORDER BY cnt DESC", [$userId]);
+$totalStoredCount = (int)val("SELECT COUNT(*) FROM leads WHERE user_id = ?", [$userId]);
 
 ob_start();
 ?>
@@ -173,6 +176,20 @@ ob_start();
                 </div>
             </div>
         </div>
+
+        <!-- Stored Search Sessions History (Auto-Saved by Category & Location) -->
+        <div class="mt-5 pt-4 border-t border-white/[0.08]">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="history" class="w-3.5 h-3.5 text-[#d9b46c]"></i>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-[#f4f1ea]">Stored Search Sessions (Auto-Saved Category & Location)</h4>
+                </div>
+                <span class="text-[11px] text-[#a3a6b0] subtext-contrast">Click any session to reload / filter leads</span>
+            </div>
+            <div id="savedSearchesContainer" class="flex items-center gap-2 flex-wrap text-xs">
+                <!-- Dynamically rendered via JS -->
+            </div>
+        </div>
     </div>
 
     <!-- Scraped Leads Staging & CRM View -->
@@ -186,13 +203,13 @@ ob_start();
                 <button type="button" onclick="switchViewTab('discovered')" id="tab-discovered" class="view-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#d9b46c] text-black shadow-md">
                     <i data-lucide="search" class="w-3.5 h-3.5"></i>
                     <span>Discovered Leads</span>
-                    <span id="discoveredCountBadge" class="px-1.5 py-0.2 rounded-full bg-black/20 text-black text-[10px] font-extrabold">0 New</span>
+                    <span id="discoveredCountBadge" class="px-1.5 py-0.2 rounded-full bg-black/20 text-black text-[10px] font-extrabold">0 Stored</span>
                 </button>
 
                 <button type="button" onclick="switchViewTab('saved')" id="tab-saved" class="view-tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-[#a3a6b0] hover:text-white transition flex items-center gap-2 bg-white/[0.04] border border-white/[0.08]">
                     <i data-lucide="bookmark-check" class="w-3.5 h-3.5 text-emerald-400"></i>
                     <span>Saved in CRM Pipeline</span>
-                    <span id="savedCountBadge" class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold"><?= count($crmLeads) ?> Saved</span>
+                    <span id="savedCountBadge" class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold"><?= $totalStoredCount ?> Stored</span>
                 </button>
             </div>
 
@@ -203,20 +220,66 @@ ob_start();
                     <label for="selectAllCheckbox" class="text-xs text-[#f4f1ea] font-bold cursor-pointer form-label">Select All</label>
                 </div>
 
-                <button type="button" onclick="saveSelectedLeads()" id="saveSelectedBtn" class="px-3.5 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-[#f4f1ea] text-xs font-semibold border border-white/[0.1] flex items-center gap-1.5 transition disabled:opacity-50">
-                    <i data-lucide="check-square" class="w-3.5 h-3.5 text-emerald-400"></i>
-                    <span>Save Selected (<span id="selectedCountNum">0</span>) to CRM</span>
-                </button>
-
-                <button type="button" onclick="saveAllDiscoveredLeads()" id="saveAllBtn" class="btn-gold-cta px-4 py-2 rounded-xl text-black text-xs font-extrabold shadow-md flex items-center gap-1.5 transition">
-                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-                    <span>Save All (<span id="totalDiscoveredNum">0</span>) to CRM</span>
-                </button>
+                <a href="/crm.php" class="btn-gold-cta px-4 py-2 rounded-xl text-black text-xs font-extrabold shadow-md flex items-center gap-1.5 transition">
+                    <i data-lucide="kanban" class="w-3.5 h-3.5"></i>
+                    <span>Manage in CRM Pipeline</span>
+                </a>
 
                 <a href="/api.php?action=export_leads_csv" class="px-3.5 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-[#f4f1ea] text-xs font-semibold border border-white/[0.1] flex items-center gap-1.5 transition" title="Export CSV">
                     <i data-lucide="download" class="w-3.5 h-3.5"></i>
                     <span>Export CSV</span>
                 </a>
+            </div>
+        </div>
+
+        <!-- Category & Location Filter Controls Bar -->
+        <div class="p-4 glass-panel rounded-2xl border border-white/[0.08] space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                
+                <!-- Quick Search Input -->
+                <div class="sm:col-span-5 relative">
+                    <i data-lucide="search" class="w-3.5 h-3.5 text-[#a3a6b0] absolute left-3 top-2.5"></i>
+                    <input type="text" id="leadQuickFilter" oninput="applyLeadFilters()" placeholder="Filter by business or decision maker..."
+                           class="w-full bg-[#11141c] border border-white/[0.12] rounded-xl pl-8 pr-3 py-1.5 text-xs text-[#f4f1ea] placeholder-[#6e7280] focus:outline-none focus:border-[#d9b46c]">
+                </div>
+
+                <!-- Category-wise Filter Dropdown -->
+                <div class="sm:col-span-3">
+                    <select id="categoryFilterSelect" onchange="applyLeadFilters()" 
+                            class="w-full bg-[#11141c] border border-white/[0.12] rounded-xl px-3 py-1.5 text-xs text-[#f4f1ea] focus:outline-none focus:border-[#d9b46c]">
+                        <option value="">📂 All Categories</option>
+                    </select>
+                </div>
+
+                <!-- Location-wise Filter Dropdown -->
+                <div class="sm:col-span-3">
+                    <select id="cityFilterSelect" onchange="applyLeadFilters()" 
+                            class="w-full bg-[#11141c] border border-white/[0.12] rounded-xl px-3 py-1.5 text-xs text-[#f4f1ea] focus:outline-none focus:border-[#d9b46c]">
+                        <option value="">📍 All Locations</option>
+                    </select>
+                </div>
+
+                <!-- Reset Filters Button -->
+                <div class="sm:col-span-1 flex justify-end">
+                    <button type="button" onclick="resetLeadFilters()" class="text-xs text-[#d9b46c] hover:underline font-bold flex items-center gap-1" title="Reset Filters">
+                        <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                        <span>Reset</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Chips Bar: Dynamic Category & Location Pills -->
+            <div class="pt-2 border-t border-white/[0.06] flex items-center gap-2 flex-wrap text-xs">
+                <span class="text-[11px] font-bold text-[#a3a6b0] uppercase tracking-wider flex items-center gap-1 mr-1">
+                    <i data-lucide="filter" class="w-3 h-3 text-[#d9b46c]"></i>
+                    <span>Quick Filter:</span>
+                </span>
+                <div id="quickChipsContainer" class="flex items-center gap-1.5 flex-wrap flex-1">
+                    <!-- Populated dynamically via JS -->
+                </div>
+                <div class="text-[11px] text-[#a3a6b0] font-mono ml-auto">
+                    Showing <strong class="text-[#f4f1ea]" id="filteredCount">0</strong> of <strong class="text-[#f4f1ea]" id="totalVisibleCount">0</strong> leads
+                </div>
             </div>
         </div>
 
@@ -260,10 +323,14 @@ ob_start();
 <script>
 window.__discoveredLeads = [];
 window.__savedCrmLeads = <?= json_encode($crmLeads) ?>;
+window.__savedSearches = <?= json_encode($savedSearches) ?>;
+window.__allCategories = <?= json_encode($allCategories) ?>;
+window.__allCities = <?= json_encode($allCities) ?>;
 window.__activeViewTab = 'discovered';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Always start on Discovered Leads tab and immediately trigger live discovery for 60+ fresh leads
+    renderSavedSearches();
+    populateFilterControls();
     switchViewTab('discovered');
     runAutoInitialScrape();
 });
@@ -281,6 +348,185 @@ function toggleBlueprintDetails() {
         icon.classList.remove('rotate-180');
         label.textContent = 'View Qualification Blueprint';
     }
+}
+
+function renderSavedSearches() {
+    const c = document.getElementById('savedSearchesContainer');
+    if (!c) return;
+    if (!window.__savedSearches || window.__savedSearches.length === 0) {
+        c.innerHTML = '<span class="text-[11px] text-[#a3a6b0] italic subtext-contrast">No stored searches yet. Every search auto-saves to your history & CRM database.</span>';
+        return;
+    }
+    c.innerHTML = window.__savedSearches.map(s => {
+        const count = s.qualified_found || s.leads_found || 60;
+        return `
+            <button type="button" onclick="loadPastSearch('${escapeHtml(s.keyword)}', '${escapeHtml(s.location)}')" 
+                    class="search-history-chip px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+                    title="Click to load ${escapeHtml(s.keyword)} in ${escapeHtml(s.location)}">
+                <i data-lucide="compass" class="w-3.5 h-3.5 text-[#d9b46c]"></i>
+                <span class="font-extrabold text-[#f4f1ea]">${escapeHtml(s.keyword)}</span>
+                <span class="text-[#a3a6b0]">•</span>
+                <span class="text-emerald-400 font-bold">${escapeHtml(s.location)}</span>
+                <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-[10px] font-mono font-bold">${count} Stored</span>
+            </button>
+        `;
+    }).join('');
+    lucide.createIcons();
+}
+
+function populateFilterControls() {
+    const catSelect = document.getElementById('categoryFilterSelect');
+    const citySelect = document.getElementById('cityFilterSelect');
+    const quickChips = document.getElementById('quickChipsContainer');
+    if (!catSelect || !citySelect) return;
+
+    // Aggregate from both discovered and saved CRM leads
+    const allKnown = [...(window.__discoveredLeads || []), ...(window.__savedCrmLeads || [])];
+    const catMap = {};
+    const cityMap = {};
+
+    allKnown.forEach(l => {
+        if (l.category) {
+            catMap[l.category] = (catMap[l.category] || 0) + 1;
+        }
+        if (l.city) {
+            cityMap[l.city] = (cityMap[l.city] || 0) + 1;
+        }
+    });
+
+    const curCat = catSelect.value;
+    const curCity = citySelect.value;
+
+    // Categories dropdown
+    catSelect.innerHTML = `<option value="">📂 All Categories (${allKnown.length})</option>` + 
+        Object.keys(catMap).sort((a,b) => catMap[b] - catMap[a]).map(cat => 
+            `<option value="${escapeHtml(cat)}" ${curCat === cat ? 'selected' : ''}>${escapeHtml(cat)} (${catMap[cat]})</option>`
+        ).join('');
+
+    // Cities dropdown
+    citySelect.innerHTML = `<option value="">📍 All Locations (${Object.keys(cityMap).length} Cities)</option>` + 
+        Object.keys(cityMap).sort((a,b) => cityMap[b] - cityMap[a]).map(city => 
+            `<option value="${escapeHtml(city)}" ${curCity === city ? 'selected' : ''}>${escapeHtml(city)} (${cityMap[city]})</option>`
+        ).join('');
+
+    // Quick chips
+    if (quickChips) {
+        const topCats = Object.keys(catMap).sort((a,b) => catMap[b] - catMap[a]).slice(0, 4);
+        const topCities = Object.keys(cityMap).sort((a,b) => cityMap[b] - cityMap[a]).slice(0, 3);
+        
+        let chipsHtml = `
+            <button type="button" onclick="resetLeadFilters()" class="filter-chip px-2 py-0.5 rounded-lg text-[11px] font-bold ${(!curCat && !curCity) ? 'active' : ''}">
+                All
+            </button>
+        `;
+
+        topCats.forEach(cat => {
+            chipsHtml += `
+                <button type="button" onclick="selectFilterChip('category', '${escapeHtml(cat)}')" 
+                        class="filter-chip px-2 py-0.5 rounded-lg text-[11px] font-bold ${curCat === cat ? 'active' : ''}" title="Filter by category: ${escapeHtml(cat)}">
+                    📂 ${escapeHtml(cat)} (${catMap[cat]})
+                </button>
+            `;
+        });
+
+        topCities.forEach(city => {
+            chipsHtml += `
+                <button type="button" onclick="selectFilterChip('city', '${escapeHtml(city)}')" 
+                        class="filter-chip px-2 py-0.5 rounded-lg text-[11px] font-bold ${curCity === city ? 'active' : ''}" title="Filter by location: ${escapeHtml(city)}">
+                    📍 ${escapeHtml(city)} (${cityMap[city]})
+                </button>
+            `;
+        });
+
+        quickChips.innerHTML = chipsHtml;
+    }
+}
+
+function selectFilterChip(type, val) {
+    if (type === 'category') {
+        const el = document.getElementById('categoryFilterSelect');
+        if (el) el.value = (el.value === val) ? '' : val;
+    } else if (type === 'city') {
+        const el = document.getElementById('cityFilterSelect');
+        if (el) el.value = (el.value === val) ? '' : val;
+    }
+    populateFilterControls();
+    applyLeadFilters();
+}
+
+function resetLeadFilters() {
+    const quickInput = document.getElementById('leadQuickFilter');
+    const catSelect = document.getElementById('categoryFilterSelect');
+    const citySelect = document.getElementById('cityFilterSelect');
+    if (quickInput) quickInput.value = '';
+    if (catSelect) catSelect.value = '';
+    if (citySelect) citySelect.value = '';
+    populateFilterControls();
+    applyLeadFilters();
+}
+
+function applyLeadFilters() {
+    const list = (window.__activeViewTab === 'discovered') ? window.__discoveredLeads : window.__savedCrmLeads;
+    const catVal = (document.getElementById('categoryFilterSelect')?.value || '').trim();
+    const cityVal = (document.getElementById('cityFilterSelect')?.value || '').trim().toLowerCase();
+    const query = (document.getElementById('leadQuickFilter')?.value || '').trim().toLowerCase();
+
+    let filtered = list;
+
+    if (catVal) {
+        filtered = filtered.filter(l => (l.category || '').toLowerCase() === catVal.toLowerCase());
+    }
+
+    if (cityVal) {
+        filtered = filtered.filter(l => (l.city || '').toLowerCase().includes(cityVal));
+    }
+
+    if (query) {
+        filtered = filtered.filter(l => 
+            (l.business_name || '').toLowerCase().includes(query) ||
+            (l.decision_maker_name || '').toLowerCase().includes(query) ||
+            (l.category || '').toLowerCase().includes(query) ||
+            (l.city || '').toLowerCase().includes(query) ||
+            (l.phone || '').includes(query) ||
+            (l.whatsapp || '').includes(query)
+        );
+    }
+
+    const filteredCount = document.getElementById('filteredCount');
+    const totalVisibleCount = document.getElementById('totalVisibleCount');
+    if (filteredCount) filteredCount.textContent = filtered.length;
+    if (totalVisibleCount) totalVisibleCount.textContent = list.length;
+
+    renderLeadsTable(filtered, window.__activeViewTab === 'saved');
+}
+
+async function loadPastSearch(keyword, location) {
+    document.getElementById('scrapeKeyword').value = keyword;
+    document.getElementById('scrapeLocation').value = location;
+    
+    // Check if we already have leads stored for this search in CRM
+    const parts = location.split(',')[0].trim().toLowerCase();
+    const matchingSaved = (window.__savedCrmLeads || []).filter(l => 
+        (l.city || '').toLowerCase().includes(parts) &&
+        ((l.category || '').toLowerCase().includes(keyword.toLowerCase().split(' ')[0]) || (l.business_name || '').toLowerCase().includes(keyword.toLowerCase().split(' ')[0]))
+    );
+
+    if (matchingSaved.length >= 10) {
+        // Instant filter view without re-calling scraper if user desires
+        const citySelect = document.getElementById('cityFilterSelect');
+        if (citySelect) {
+            citySelect.value = matchingSaved[0].city;
+            populateFilterControls();
+            applyLeadFilters();
+            showToast(`Loaded ${matchingSaved.length} stored leads for ${keyword} in ${location}`, 'success');
+            return;
+        }
+    }
+
+    // Otherwise execute live discovery and auto-store
+    const minScore = parseInt(document.getElementById('scrapeMinScore').value || '75');
+    const limit = parseInt(document.getElementById('scrapeLimit').value || '60');
+    executeScrapeRequest(keyword, location, minScore, limit);
 }
 
 async function runAutoInitialScrape() {
@@ -307,7 +553,7 @@ async function executeScrapeRequest(keyword, locationVal, minScore, limit) {
     const statusSub = document.getElementById('scanStatusSubtitle');
 
     btn.disabled = true;
-    btn.innerHTML = `<span class="animate-spin w-4 h-4 border-2 border-black border-t-transparent rounded-full"></span><span>Scraping ${limit} Leads...</span>`;
+    btn.innerHTML = `<span class="animate-spin w-4 h-4 border-2 border-black border-t-transparent rounded-full"></span><span>Scraping & Storing ${limit} Leads...</span>`;
     indicator.classList.remove('hidden');
     statusTitle.textContent = `Scanning commercial registries in ${locationVal}...`;
     statusSub.textContent = `Targeting ${limit}+ unique ${keyword} prospects with verified WhatsApp & Meta Ads intelligence.`;
@@ -316,12 +562,29 @@ async function executeScrapeRequest(keyword, locationVal, minScore, limit) {
         const res = await fetch('/api.php?action=scrape_leads', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ keyword, location: locationVal, min_score: minScore, limit: limit, auto_save: false })
+            body: JSON.stringify({ keyword, location: locationVal, min_score: minScore, limit: limit, auto_save: true })
         });
         const data = await res.json();
         if (data.status === 'success') {
             window.__discoveredLeads = data.leads || [];
-            showToast(`Found ${window.__discoveredLeads.length} unique qualified leads in ${locationVal}!`, 'success');
+            if (data.saved_searches) {
+                window.__savedSearches = data.saved_searches;
+                renderSavedSearches();
+            }
+
+            // Sync with CRM database
+            try {
+                const refreshRes = await fetch('/api.php?action=get_saved_leads');
+                const refreshData = await refreshRes.json();
+                if (refreshData.status === 'success') {
+                    window.__savedCrmLeads = refreshData.leads;
+                    const savedBadge = document.getElementById('savedCountBadge');
+                    if (savedBadge) savedBadge.textContent = `${refreshData.count || window.__savedCrmLeads.length} Stored`;
+                }
+            } catch(e) {}
+
+            showToast(`Scraped & Auto-Stored ${window.__discoveredLeads.length} qualified leads in ${locationVal}!`, 'success');
+            populateFilterControls();
             switchViewTab('discovered');
         } else {
             showToast(data.message || 'Scrape failed', 'error');
@@ -344,24 +607,21 @@ function switchViewTab(tab) {
     if (tab === 'discovered') {
         tabDisc.className = 'view-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#d9b46c] text-black shadow-md';
         tabSaved.className = 'view-tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-[#a3a6b0] hover:text-white transition flex items-center gap-2 bg-white/[0.04] border border-white/[0.08]';
-        renderLeadsTable(window.__discoveredLeads, false);
     } else {
         tabSaved.className = 'view-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#d9b46c] text-black shadow-md';
         tabDisc.className = 'view-tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-[#a3a6b0] hover:text-white transition flex items-center gap-2 bg-white/[0.04] border border-white/[0.08]';
-        renderLeadsTable(window.__savedCrmLeads, true);
     }
+    applyLeadFilters();
 }
 
 function renderLeadsTable(leads, isSavedView) {
     const tbody = document.getElementById('leadsTableBody');
     const empty = document.getElementById('tableEmptyState');
-    const totalDiscoveredNum = document.getElementById('totalDiscoveredNum');
     const discoveredBadge = document.getElementById('discoveredCountBadge');
     const savedBadge = document.getElementById('savedCountBadge');
 
-    totalDiscoveredNum.textContent = window.__discoveredLeads.length;
-    discoveredBadge.textContent = `${window.__discoveredLeads.length} New`;
-    savedBadge.textContent = `${window.__savedCrmLeads.length} Saved`;
+    if (discoveredBadge) discoveredBadge.textContent = `${window.__discoveredLeads.length} Stored`;
+    if (savedBadge) savedBadge.textContent = `${window.__savedCrmLeads.length} Stored`;
 
     if (!leads || leads.length === 0) {
         tbody.innerHTML = '';

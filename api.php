@@ -23,13 +23,21 @@ switch ($action) {
         $location = trim($input['location'] ?? '');
         $minScore = (int)($input['min_score'] ?? ($user['min_score_filter'] ?? 70));
         $limit = max(20, min(100, (int)($input['limit'] ?? 60)));
-        $autoSave = !empty($input['auto_save']) && ($input['auto_save'] === true || $input['auto_save'] === '1');
+        // Default to auto-save = true so every search and lead is stored automatically into CRM
+        $autoSave = !isset($input['auto_save']) || $input['auto_save'] === true || $input['auto_save'] === '1' || $input['auto_save'] === 1;
 
         if (empty($keyword)) {
             json_response(['status' => 'error', 'message' => 'Keyword / niche cannot be empty.'], 400);
         }
 
         $result = ScraperEngine::searchAndEnrich((int)$user['id'], $keyword, $location, $minScore, $limit, $autoSave);
+
+        // Aggregate statistics, saved searches, categories and locations
+        $result['saved_searches'] = all("SELECT * FROM saved_searches WHERE user_id = ? ORDER BY id DESC LIMIT 12", [$user['id']]);
+        $result['total_stored_leads'] = (int)val("SELECT COUNT(*) FROM leads WHERE user_id = ?", [$user['id']]);
+        $result['categories'] = all("SELECT category, COUNT(*) as cnt FROM leads WHERE user_id = ? AND category IS NOT NULL AND category != '' GROUP BY category ORDER BY cnt DESC", [$user['id']]);
+        $result['cities'] = all("SELECT city, COUNT(*) as cnt FROM leads WHERE user_id = ? AND city IS NOT NULL AND city != '' GROUP BY city ORDER BY cnt DESC", [$user['id']]);
+
         json_response($result);
         break;
 
@@ -346,13 +354,51 @@ switch ($action) {
         ]);
         break;
 
-    // 13. Get Saved CRM Leads
+    // 13. Get Saved CRM Leads (with optional category & location filtering)
     case 'get_saved_leads':
-        $savedList = all("SELECT * FROM leads WHERE user_id = ? ORDER BY id DESC LIMIT 200", [$user['id']]);
+        $cat = trim($_GET['category'] ?? ($input['category'] ?? ''));
+        $loc = trim($_GET['location'] ?? ($input['location'] ?? ''));
+        $stage = trim($_GET['stage'] ?? ($input['stage'] ?? ''));
+
+        $sql = "SELECT * FROM leads WHERE user_id = ?";
+        $params = [$user['id']];
+        if (!empty($cat)) {
+            $sql .= " AND category = ?";
+            $params[] = $cat;
+        }
+        if (!empty($loc)) {
+            $sql .= " AND (city LIKE ? OR address LIKE ?)";
+            $params[] = "%{$loc}%";
+            $params[] = "%{$loc}%";
+        }
+        if (!empty($stage)) {
+            $sql .= " AND pipeline_stage = ?";
+            $params[] = $stage;
+        }
+        $sql .= " ORDER BY id DESC LIMIT 500";
+        $savedList = all($sql, $params);
+
+        $categories = all("SELECT category, COUNT(*) as cnt FROM leads WHERE user_id = ? AND category IS NOT NULL AND category != '' GROUP BY category ORDER BY cnt DESC", [$user['id']]);
+        $cities = all("SELECT city, COUNT(*) as cnt FROM leads WHERE user_id = ? AND city IS NOT NULL AND city != '' GROUP BY city ORDER BY cnt DESC", [$user['id']]);
+        $searches = all("SELECT * FROM saved_searches WHERE user_id = ? ORDER BY id DESC LIMIT 12", [$user['id']]);
+
         json_response([
             'status' => 'success',
             'leads' => $savedList,
-            'count' => count($savedList)
+            'count' => count($savedList),
+            'total_in_db' => (int)val("SELECT COUNT(*) FROM leads WHERE user_id = ?", [$user['id']]),
+            'categories' => $categories,
+            'cities' => $cities,
+            'saved_searches' => $searches,
+        ]);
+        break;
+
+    // 14. Get Stored Search Sessions History
+    case 'get_saved_searches':
+        $searches = all("SELECT * FROM saved_searches WHERE user_id = ? ORDER BY id DESC LIMIT 20", [$user['id']]);
+        json_response([
+            'status' => 'success',
+            'searches' => $searches
         ]);
         break;
 
