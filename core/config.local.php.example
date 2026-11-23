@@ -1,0 +1,12 @@
+<?php
+// Local overrides (Do not commit to version control)
+return [
+    'app_name' => 'Outreach AI Freedom (Local)',
+    'app_url' => 'http://localhost:8000',
+    'timezone' => 'Asia/Kolkata',
+    'secret' => 'local-development-secret-key',
+    'db' => [
+        'driver' => 'sqlite',
+    ],
+    'sqlite_fallback_path' => dirname(__DIR__) . '/data/outreach.sqlite',
+];

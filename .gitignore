@@ -1,0 +1,10 @@
+# Outreach AI Freedom - Git Ignore
+core/config.local.php
+data/*.sqlite
+data/*.db
+backups/
+*.log
+*.zip
+*.tar.gz
+.DS_Store
+.env
