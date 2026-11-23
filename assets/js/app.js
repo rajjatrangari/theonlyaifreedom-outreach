@@ -206,7 +206,7 @@ function renderOutreachModalContent(lead, sequence, activeChannel) {
                 <button type="button" onclick="closeModal()" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition">
                     Cancel
                 </button>
-                <button type="button" onclick="dispatchOutreach(${lead.id})" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black shadow-lg shadow-emerald-500/20 transition flex items-center gap-2">
+                <button type="button" onclick="dispatchOutreach(${lead.id})" class="btn-gold-cta px-5 py-2.5 rounded-xl text-xs font-extrabold text-black shadow-lg transition flex items-center gap-2">
                     <i data-lucide="send" class="w-3.5 h-3.5"></i>
                     <span>Open & Dispatch</span>
                 </button>

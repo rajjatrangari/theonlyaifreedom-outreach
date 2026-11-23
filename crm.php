@@ -83,23 +83,23 @@ ob_start();
         <div class="flex items-center gap-3 w-full md:w-auto justify-end">
             
             <!-- Kanban / Table View Toggle -->
-            <div class="p-1 rounded-xl bg-slate-900 border border-slate-800 flex items-center">
+            <div class="p-1 rounded-xl bg-[#0c0e14] border border-white/[0.08] flex items-center">
                 <a href="/crm.php?view=kanban<?= $filterDue ? '&filter=due' : '' ?>" title="Kanban Board View" 
-                   class="p-1.5 rounded-lg text-xs font-medium transition <?= $viewMode === 'kanban' ? 'bg-emerald-500 text-black shadow' : 'text-slate-400 hover:text-white' ?>">
+                   class="p-1.5 rounded-lg text-xs font-medium transition <?= $viewMode === 'kanban' ? 'btn-gold-cta text-black shadow' : 'text-[#a3a6b0] hover:text-white' ?>">
                     <i data-lucide="kanban" class="w-4 h-4"></i>
                 </a>
                 <a href="/crm.php?view=table<?= $filterDue ? '&filter=due' : '' ?>" title="Table View" 
-                   class="p-1.5 rounded-lg text-xs font-medium transition <?= $viewMode === 'table' ? 'bg-emerald-500 text-black shadow' : 'text-slate-400 hover:text-white' ?>">
+                   class="p-1.5 rounded-lg text-xs font-medium transition <?= $viewMode === 'table' ? 'btn-gold-cta text-black shadow' : 'text-[#a3a6b0] hover:text-white' ?>">
                     <i data-lucide="table" class="w-4 h-4"></i>
                 </a>
             </div>
 
-            <a href="/api.php?action=export_leads_csv" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition">
+            <a href="/api.php?action=export_leads_csv" class="px-3.5 py-2 rounded-xl bg-[#11141c] hover:bg-[#161a24] text-[#a3a6b0] hover:text-white text-xs font-medium border border-white/[0.08] flex items-center gap-1.5 transition">
                 <i data-lucide="download" class="w-3.5 h-3.5"></i>
                 <span>Export CSV</span>
             </a>
 
-            <a href="/scraper.php" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 transition">
+            <a href="/scraper.php" class="btn-gold-cta px-4 py-2 rounded-xl text-black text-xs font-extrabold shadow-lg flex items-center gap-1.5 transition">
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 <span>Scrape More</span>
             </a>

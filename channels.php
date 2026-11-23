@@ -177,7 +177,7 @@ ob_start();
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-2">
-            <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-bold text-xs shadow-lg shadow-emerald-500/25 transition flex items-center gap-2">
+            <button type="submit" class="btn-gold-cta px-6 py-2.5 rounded-xl text-black font-extrabold text-xs shadow-lg transition flex items-center gap-2">
                 <i data-lucide="check" class="w-4 h-4"></i>
                 <span>Save Channel Connections</span>
             </button>

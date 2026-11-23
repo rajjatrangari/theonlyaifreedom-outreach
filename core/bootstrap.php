@@ -22,85 +22,85 @@ const PIPELINE_STAGES = [
     'new' => [
         'name' => 'New Scraped',
         'color' => 'slate',
-        'bg' => 'bg-slate-500/20 text-slate-300 border-slate-500/30',
-        'badge' => 'bg-slate-800 text-slate-300',
+        'bg' => 'bg-white/[0.04] text-[#a3a6b0] border-white/[0.08]',
+        'badge' => 'bg-white/[0.08] text-[#f4f1ea]',
         'icon' => 'sparkles'
     ],
     'qualified' => [
         'name' => 'Qualified (High Intent)',
-        'color' => 'blue',
-        'bg' => 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-        'badge' => 'bg-blue-900/60 text-blue-300',
+        'color' => 'gold',
+        'bg' => 'bg-[#d9b46c]/15 text-[#f3dca4] border-[#d9b46c]/30',
+        'badge' => 'bg-[#d9b46c]/25 text-[#f3dca4]',
         'icon' => 'check-circle'
     ],
     'cold' => [
         'name' => 'Cold Lead',
         'color' => 'cyan',
-        'bg' => 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-        'badge' => 'bg-cyan-950 text-cyan-300',
+        'bg' => 'bg-cyan-500/15 text-cyan-200 border-cyan-500/30',
+        'badge' => 'bg-cyan-950 text-cyan-200',
         'icon' => 'snowflake'
     ],
     'warm' => [
         'name' => 'Warm Lead',
         'color' => 'amber',
-        'bg' => 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-        'badge' => 'bg-amber-950 text-amber-300',
+        'bg' => 'bg-amber-500/15 text-amber-200 border-amber-500/30',
+        'badge' => 'bg-amber-950 text-amber-200',
         'icon' => 'sun'
     ],
     'hot' => [
         'name' => 'Hot (High Budget)',
         'color' => 'rose',
-        'bg' => 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-        'badge' => 'bg-rose-950 text-rose-300',
+        'bg' => 'bg-rose-500/15 text-rose-200 border-rose-500/30',
+        'badge' => 'bg-rose-950 text-rose-200',
         'icon' => 'flame'
     ],
     'outreach_sent' => [
         'name' => 'Outreach Sent',
         'color' => 'purple',
-        'bg' => 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-        'badge' => 'bg-purple-950 text-purple-300',
+        'bg' => 'bg-purple-500/15 text-purple-200 border-purple-500/30',
+        'badge' => 'bg-purple-950 text-purple-200',
         'icon' => 'send'
     ],
     'followup_1' => [
         'name' => 'Follow-up 1',
         'color' => 'indigo',
-        'bg' => 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-        'badge' => 'bg-indigo-950 text-indigo-300',
+        'bg' => 'bg-indigo-500/15 text-indigo-200 border-indigo-500/30',
+        'badge' => 'bg-indigo-950 text-indigo-200',
         'icon' => 'rotate-cw'
     ],
     'followup_2' => [
         'name' => 'Follow-up 2',
         'color' => 'violet',
-        'bg' => 'bg-violet-500/20 text-violet-300 border-violet-500/30',
-        'badge' => 'bg-violet-950 text-violet-300',
+        'bg' => 'bg-violet-500/15 text-violet-200 border-violet-500/30',
+        'badge' => 'bg-violet-950 text-violet-200',
         'icon' => 'refresh-cw'
     ],
     'responded' => [
         'name' => 'Responded / In Chat',
         'color' => 'teal',
-        'bg' => 'bg-teal-500/20 text-teal-300 border-teal-500/30',
-        'badge' => 'bg-teal-950 text-teal-300',
+        'bg' => 'bg-teal-500/15 text-teal-200 border-teal-500/30',
+        'badge' => 'bg-teal-950 text-teal-200',
         'icon' => 'message-square'
     ],
     'meeting_booked' => [
         'name' => 'Meeting Booked',
         'color' => 'emerald',
-        'bg' => 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-        'badge' => 'bg-emerald-950 text-emerald-300',
+        'bg' => 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30',
+        'badge' => 'bg-emerald-950 text-emerald-200',
         'icon' => 'calendar'
     ],
     'closed_won' => [
         'name' => 'Closed Won 🎉',
-        'color' => 'green',
-        'bg' => 'bg-green-500/20 text-green-300 border-green-500/30',
-        'badge' => 'bg-green-950 text-green-300 font-bold',
+        'color' => 'gold',
+        'bg' => 'bg-gradient-to-r from-[#d9b46c]/25 to-emerald-500/25 text-[#f3dca4] border-[#d9b46c]/40',
+        'badge' => 'bg-[#d9b46c]/30 text-[#f3dca4] font-extrabold',
         'icon' => 'trophy'
     ],
     'closed_lost' => [
         'name' => 'Closed Lost',
         'color' => 'zinc',
-        'bg' => 'bg-zinc-700/20 text-zinc-400 border-zinc-700/30',
-        'badge' => 'bg-zinc-900 text-zinc-400',
+        'bg' => 'bg-white/[0.03] text-[#6e7280] border-white/[0.06]',
+        'badge' => 'bg-white/[0.05] text-[#6e7280]',
         'icon' => 'x-circle'
     ],
 ];
@@ -114,6 +114,10 @@ function cfg(string $key, $default = null) {
 // Global sanitization helper
 function h($string): string {
     return htmlspecialchars((string)($string ?? ''), ENT_QUOTES, 'UTF-8');
+}
+
+function clip($s, int $n): string {
+    return mb_substr(trim(strip_tags((string)($s ?? ''))), 0, $n);
 }
 
 function now(): string {

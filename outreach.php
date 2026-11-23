@@ -167,7 +167,7 @@ ob_start();
                     </div>
 
                     <!-- Dispatch Button -->
-                    <button onclick="openOutreachModal(<?= (int)$lead['id'] ?>, 'whatsapp')" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2">
+                    <button onclick="openOutreachModal(<?= (int)$lead['id'] ?>, 'whatsapp')" class="btn-gold-cta w-full py-2.5 px-4 rounded-xl text-black font-extrabold text-xs shadow-lg transition flex items-center justify-center gap-2">
                         <i data-lucide="sparkles" class="w-4 h-4"></i>
                         <span>Generate & Dispatch Pitch</span>
                     </button>

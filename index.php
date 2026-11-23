@@ -83,7 +83,7 @@ ob_start();
                    class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
         </div>
         <div class="sm:col-span-2">
-            <button type="submit" id="quickScrapeBtn" class="w-full h-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-bold text-xs py-2.5 px-4 rounded-xl shadow-lg shadow-emerald-500/20 transition">
+            <button type="submit" id="quickScrapeBtn" class="btn-gold-cta w-full h-full flex items-center justify-center gap-2 text-black font-extrabold text-xs py-2.5 px-4 rounded-xl shadow-lg transition">
                 <i data-lucide="sparkles" class="w-4 h-4"></i>
                 <span>Scrape Now</span>
             </button>
@@ -95,56 +95,56 @@ ob_start();
 <!-- Primary Key Performance Metrics Grid -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     
-    <div class="glass-card rounded-2xl p-5 border border-slate-800">
-        <div class="flex items-center justify-between text-slate-400 mb-3">
+    <div class="glass-card rounded-2xl p-5 border border-white/[0.08]">
+        <div class="flex items-center justify-between text-[#a3a6b0] mb-3">
             <span class="text-xs font-semibold uppercase tracking-wider">Total Scraped</span>
-            <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+            <div class="w-8 h-8 rounded-lg bg-white/[0.06] text-[#f4f1ea] flex items-center justify-center">
                 <i data-lucide="database" class="w-4 h-4"></i>
             </div>
         </div>
-        <div class="text-2xl font-bold text-white"><?= number_format($totalLeads) ?></div>
-        <div class="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
-            <span class="text-emerald-400 font-semibold"><?= number_format($qualifiedLeads) ?> Qualified</span>
+        <div class="text-2xl font-extrabold text-[#f4f1ea]"><?= number_format($totalLeads) ?></div>
+        <div class="text-xs text-[#a3a6b0] mt-1 flex items-center gap-1.5">
+            <span class="text-[#d9b46c] font-semibold"><?= number_format($qualifiedLeads) ?> Qualified</span>
             <span>(<?= $totalLeads > 0 ? round(($qualifiedLeads / $totalLeads) * 100) : 0 ?>% rate)</span>
         </div>
     </div>
 
-    <div class="glass-card rounded-2xl p-5 border border-slate-800">
-        <div class="flex items-center justify-between text-slate-400 mb-3">
+    <div class="glass-card rounded-2xl p-5 border border-white/[0.08]">
+        <div class="flex items-center justify-between text-[#a3a6b0] mb-3">
             <span class="text-xs font-semibold uppercase tracking-wider">Active Outreach</span>
-            <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+            <div class="w-8 h-8 rounded-lg bg-[#d9b46c]/15 text-[#f3dca4] flex items-center justify-center">
                 <i data-lucide="send" class="w-4 h-4"></i>
             </div>
         </div>
-        <div class="text-2xl font-bold text-white"><?= number_format($outreachSent) ?></div>
-        <div class="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
-            <span class="text-purple-400 font-semibold"><?= $dueFollowups ?> Follow-ups Due</span>
+        <div class="text-2xl font-extrabold text-[#f4f1ea]"><?= number_format($outreachSent) ?></div>
+        <div class="text-xs text-[#a3a6b0] mt-1 flex items-center gap-1.5">
+            <span class="text-[#f3dca4] font-semibold"><?= $dueFollowups ?> Follow-ups Due</span>
         </div>
     </div>
 
-    <div class="glass-card rounded-2xl p-5 border border-slate-800">
-        <div class="flex items-center justify-between text-slate-400 mb-3">
+    <div class="glass-card rounded-2xl p-5 border border-white/[0.08]">
+        <div class="flex items-center justify-between text-[#a3a6b0] mb-3">
             <span class="text-xs font-semibold uppercase tracking-wider">Closed Deals Won</span>
-            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <div class="w-8 h-8 rounded-lg bg-[#d9b46c]/20 text-[#d9b46c] flex items-center justify-center">
                 <i data-lucide="trophy" class="w-4 h-4"></i>
             </div>
         </div>
-        <div class="text-2xl font-bold text-white"><?= number_format($closedWon) ?></div>
-        <div class="text-xs text-emerald-400 mt-1 font-semibold flex items-center gap-1">
+        <div class="text-2xl font-extrabold gold-text"><?= number_format($closedWon) ?></div>
+        <div class="text-xs text-[#d9b46c] mt-1 font-semibold flex items-center gap-1">
             <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
             <span>₹<?= number_format($wonRevenue) ?> Won Revenue</span>
         </div>
     </div>
 
-    <div class="glass-card rounded-2xl p-5 border border-slate-800">
-        <div class="flex items-center justify-between text-slate-400 mb-3">
+    <div class="glass-card rounded-2xl p-5 border border-white/[0.08]">
+        <div class="flex items-center justify-between text-[#a3a6b0] mb-3">
             <span class="text-xs font-semibold uppercase tracking-wider">Pipeline Value</span>
-            <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+            <div class="w-8 h-8 rounded-lg bg-white/[0.06] text-[#d9b46c] flex items-center justify-center">
                 <i data-lucide="wallet" class="w-4 h-4"></i>
             </div>
         </div>
-        <div class="text-2xl font-bold text-white">₹<?= number_format($totalPipelineValue) ?></div>
-        <div class="text-xs text-slate-400 mt-1">Active prospective value</div>
+        <div class="text-2xl font-extrabold text-[#f4f1ea]">₹<?= number_format($totalPipelineValue) ?></div>
+        <div class="text-xs text-[#a3a6b0] mt-1">Active prospective value</div>
     </div>
 </div>
 
@@ -228,7 +228,7 @@ ob_start();
                             <span class="text-xs font-semibold text-slate-300">
                                 ₹<?= number_format((float)$lead['deal_value']) ?>
                             </span>
-                            <button onclick="openOutreachModal(<?= (int)$lead['id'] ?>, 'whatsapp')" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-bold text-xs shadow-md shadow-emerald-500/15 flex items-center gap-1.5">
+                            <button onclick="openOutreachModal(<?= (int)$lead['id'] ?>, 'whatsapp')" class="btn-gold-cta px-3.5 py-1.5 rounded-xl text-black font-extrabold text-xs shadow-md flex items-center gap-1.5">
                                 <i data-lucide="send" class="w-3 h-3"></i>
                                 <span>Reach Out</span>
                             </button>

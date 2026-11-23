@@ -242,7 +242,7 @@ ob_start();
             <a href="/index.php" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition">
                 Cancel
             </a>
-            <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-bold text-xs shadow-lg shadow-emerald-500/25 transition flex items-center gap-2">
+            <button type="submit" class="btn-gold-cta px-6 py-2.5 rounded-xl text-black font-extrabold text-xs shadow-lg transition flex items-center gap-2">
                 <i data-lucide="save" class="w-4 h-4"></i>
                 <span>Save Offering & Sync AI</span>
             </button>

@@ -79,7 +79,7 @@ ob_start();
                     <span>Every lead includes working website, phone, verified WhatsApp, and social profiles.</span>
                 </div>
 
-                <button type="submit" id="scrapeSubmitBtn" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-bold text-xs shadow-lg shadow-emerald-500/25 transition flex items-center justify-center gap-2">
+                <button type="submit" id="scrapeSubmitBtn" class="btn-gold-cta w-full sm:w-auto px-6 py-2.5 rounded-xl text-black font-extrabold text-xs shadow-lg transition flex items-center justify-center gap-2">
                     <i data-lucide="sparkles" class="w-4 h-4"></i>
                     <span>Scrape & Enrich Leads</span>
                 </button>
@@ -222,7 +222,7 @@ ob_start();
 
                                     <!-- Outreach Action -->
                                     <td class="py-3.5 px-4 text-right">
-                                        <button onclick="openOutreachModal(<?= (int)$lead['id'] ?>, 'whatsapp')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-bold text-xs shadow-md shadow-emerald-500/15 transition">
+                                        <button onclick="openOutreachModal(<?= (int)$lead['id'] ?>, 'whatsapp')" class="btn-gold-cta inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-black font-extrabold text-xs shadow-md transition">
                                             <i data-lucide="sparkles" class="w-3 h-3"></i>
                                             <span>AI Pitch</span>
                                         </button>

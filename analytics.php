@@ -55,30 +55,30 @@ ob_start();
 
     <!-- Revenue & Core KPIs -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="glass-card rounded-2xl p-5 border border-slate-800">
-            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Closed Won Revenue</div>
-            <div class="text-3xl font-extrabold text-emerald-400">₹<?= number_format($wonRevenue) ?></div>
-            <div class="text-xs text-slate-400 mt-2"><?= $totalWon ?> deals converted successfully</div>
+        <div class="glass-card rounded-2xl p-5 border border-white/[0.08]">
+            <div class="text-xs font-semibold uppercase tracking-wider text-[#a3a6b0] mb-2">Closed Won Revenue</div>
+            <div class="text-3xl font-extrabold gold-text">₹<?= number_format($wonRevenue) ?></div>
+            <div class="text-xs text-[#d9b46c] mt-2 font-semibold"><?= $totalWon ?> deals converted successfully</div>
         </div>
 
-        <div class="glass-card rounded-2xl p-5 border border-slate-800">
-            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Active Pipeline Value</div>
-            <div class="text-3xl font-extrabold text-white">₹<?= number_format($pipelineValue) ?></div>
-            <div class="text-xs text-slate-400 mt-2">Prospective value in flight</div>
+        <div class="glass-card rounded-2xl p-5 border border-white/[0.08]">
+            <div class="text-xs font-semibold uppercase tracking-wider text-[#a3a6b0] mb-2">Active Pipeline Value</div>
+            <div class="text-3xl font-extrabold text-[#f4f1ea]">₹<?= number_format($pipelineValue) ?></div>
+            <div class="text-xs text-[#a3a6b0] mt-2">Prospective value in flight</div>
         </div>
 
-        <div class="glass-card rounded-2xl p-5 border border-slate-800">
-            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Total Pitches Dispatched</div>
-            <div class="text-3xl font-extrabold text-indigo-400"><?= number_format($totalDispatched) ?></div>
-            <div class="text-xs text-slate-400 mt-2">Across all 4 integrated channels</div>
+        <div class="glass-card rounded-2xl p-5 border border-white/[0.08]">
+            <div class="text-xs font-semibold uppercase tracking-wider text-[#a3a6b0] mb-2">Total Pitches Dispatched</div>
+            <div class="text-3xl font-extrabold text-[#f3dca4]"><?= number_format($totalDispatched) ?></div>
+            <div class="text-xs text-[#a3a6b0] mt-2">Across all 4 integrated channels</div>
         </div>
 
-        <div class="glass-card rounded-2xl p-5 border border-slate-800">
-            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Qualification Accuracy</div>
-            <div class="text-3xl font-extrabold text-blue-400">
+        <div class="glass-card rounded-2xl p-5 border border-white/[0.08]">
+            <div class="text-xs font-semibold uppercase tracking-wider text-[#a3a6b0] mb-2">Qualification Accuracy</div>
+            <div class="text-3xl font-extrabold text-[#34d399]">
                 <?= $totalScraped > 0 ? round(($totalQualified / $totalScraped) * 100) : 0 ?>%
             </div>
-            <div class="text-xs text-slate-400 mt-2"><?= $totalQualified ?> / <?= $totalScraped ?> leads verified</div>
+            <div class="text-xs text-[#a3a6b0] mt-2"><?= $totalQualified ?> / <?= $totalScraped ?> leads verified</div>
         </div>
     </div>
 

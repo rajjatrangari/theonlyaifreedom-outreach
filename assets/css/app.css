@@ -1,4 +1,8 @@
-/* Outreach AI Freedom Stylesheet */
+/* ==========================================================
+   Outreach AI Freedom — The Only AI Freedom Theme
+   Obsidian (#07080c) + Champagne Gold (#d9b46c) + Emerald Glow
+   ========================================================== */
+
 @layer utilities {
     .custom-scroll::-webkit-scrollbar {
         width: 6px;
@@ -8,46 +12,114 @@
         background: transparent;
     }
     .custom-scroll::-webkit-scrollbar-thumb {
-        background: rgba(148, 163, 184, 0.2);
+        background: rgba(255, 255, 255, 0.12);
         border-radius: 9999px;
     }
     .custom-scroll::-webkit-scrollbar-thumb:hover {
-        background: rgba(148, 163, 184, 0.4);
+        background: rgba(217, 180, 108, 0.4);
     }
 }
 
-/* Glassmorphism cards */
+/* Ambient Background Lighting */
+.ambient {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.ambient::before {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(140px);
+    opacity: 0.22;
+    width: 640px;
+    height: 640px;
+    background: #8c6a28;
+    top: -200px;
+    right: -120px;
+}
+
+.ambient::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(140px);
+    opacity: 0.18;
+    width: 580px;
+    height: 580px;
+    background: #0b5c45;
+    bottom: -240px;
+    left: -160px;
+}
+
+.grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Gold CTA Button */
+.btn-gold-cta {
+    background: linear-gradient(135deg, #f3dca4 0%, #d9b46c 45%, #a9823c 100%);
+    color: #07080c !important;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    transition: all 0.25s ease;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-gold-cta:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(217, 180, 108, 0.35);
+}
+
+/* Glass Panels & Cards */
 .glass-panel {
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(51, 65, 85, 0.5);
+    background: rgba(17, 20, 28, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-card {
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(51, 65, 85, 0.6);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(22, 26, 36, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-    border-color: rgba(16, 185, 129, 0.4);
+    border-color: rgba(217, 180, 108, 0.35);
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(16, 185, 129, 0.1);
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.8), 0 0 25px -5px rgba(217, 180, 108, 0.15);
+}
+
+/* Gold text gradient */
+.gold-text {
+    background: linear-gradient(135deg, #f3dca4 0%, #d9b46c 45%, #a9823c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 /* Kanban column drag and drop */
 .kanban-col {
-    min-width: 290px;
-    max-width: 290px;
+    min-width: 295px;
+    max-width: 295px;
     flex-shrink: 0;
 }
 
 .kanban-drop-target {
-    border: 2px dashed rgba(16, 185, 129, 0.6) !important;
-    background: rgba(16, 185, 129, 0.05) !important;
+    border: 2px dashed rgba(217, 180, 108, 0.6) !important;
+    background: rgba(217, 180, 108, 0.06) !important;
 }
 
 .dragging {
