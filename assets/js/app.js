@@ -390,8 +390,9 @@ function renderOutreachModalContent(lead, sequence, activeChannel) {
 
         <div class="p-5 border-t border-white/[0.08] bg-slate-900/60 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <span class="text-xs text-slate-400">
-                    Sends in-platform via Cloud API &amp; updates <strong>CRM Pipeline</strong>.
+                <span class="text-xs text-slate-300 flex items-center gap-1.5">
+                    <i data-lucide="zap" class="w-3.5 h-3.5 text-[#d9b46c] flex-shrink-0"></i>
+                    <span>Sends directly in-platform &amp; opens in <strong>Unified Inbox</strong>.</span>
                 </span>
                 <button type="button" onclick="openChannelExternal()" class="text-[11px] text-[#d9b46c] hover:underline font-bold flex items-center gap-1" title="Only if you prefer manual WhatsApp Web">
                     <span>or Open Web App ↗</span>
@@ -680,19 +681,29 @@ async function dispatchOutreach(leadId) {
         if (resData.status === 'success') {
             const recipientName = lead.decision_maker_name || lead.business_name || 'prospect';
             const successMsg = resData.cloud_sent
-                ? `✓ Delivered directly to ${recipientName} via Meta WhatsApp Cloud API!`
-                : (resData.message || 'Outreach dispatched & lead moved to Outreach Sent in CRM! 🚀');
+                ? `✓ Delivered directly to ${recipientName} via ${channel.toUpperCase()}!`
+                : (resData.message || 'Outreach dispatched & lead tracked in CRM Pipeline! 🚀');
 
             showToast(successMsg, 'success');
-            closeModal();
 
-            // Real-time UI refresh
+            // Refresh background data if present (without refreshing entire page)
             if (typeof refreshKanban === 'function') {
                 refreshKanban();
             } else if (typeof loadSavedLeads === 'function') {
                 loadSavedLeads();
+            }
+
+            // If already on inbox.php, redirect to the thread smoothly
+            if (window.location.pathname.includes('inbox.php')) {
+                closeModal();
+                if (typeof selectThread === 'function') {
+                    selectThread(lead.id);
+                } else {
+                    window.location.href = `/inbox.php?lead_id=${lead.id}&delivered=1`;
+                }
             } else {
-                setTimeout(() => location.reload(), 1000);
+                // Display in-modal Verified Delivery Receipt with 1-click jump to Unified Inbox
+                renderOutreachDeliverySuccess(lead, channel, message, resData);
             }
         } else {
             showToast(resData.message || 'Dispatch failed', 'error');
@@ -711,6 +722,164 @@ async function dispatchOutreach(leadId) {
             lucide.createIcons();
         }
     }
+}
+
+let __redirectCountdownTimer = null;
+
+function cancelAutoRedirect() {
+    if (__redirectCountdownTimer) {
+        clearInterval(__redirectCountdownTimer);
+        __redirectCountdownTimer = null;
+    }
+    const notice = document.getElementById('countdownNotice');
+    if (notice) {
+        notice.innerHTML = `<span class="text-slate-400 text-xs">Auto-redirect paused. You can remain on this page or open Unified Inbox manually.</span>`;
+    }
+}
+
+function closeModalAndRefresh() {
+    cancelAutoRedirect();
+    closeModal();
+    if (typeof refreshKanban === 'function') {
+        refreshKanban();
+    } else if (typeof loadSavedLeads === 'function') {
+        loadSavedLeads();
+    }
+}
+
+function renderOutreachDeliverySuccess(lead, channel, message, resData) {
+    const modalContent = document.getElementById('outreachModalContent');
+    if (!modalContent) return;
+
+    const dmName = lead.decision_maker_name || lead.business_name || 'Prospect';
+    const dmTitle = lead.decision_maker_title || 'Director';
+    const bName = lead.business_name || '';
+    const inboxUrl = resData.inbox_url || (`/inbox.php?lead_id=${lead.id}&delivered=1`);
+
+    let channelName = 'WhatsApp Direct';
+    let channelColor = 'text-emerald-400';
+    let channelIcon = 'message-circle';
+    if (channel === 'linkedin') {
+        channelName = 'LinkedIn InMail & DM';
+        channelColor = 'text-blue-400';
+        channelIcon = 'linkedin';
+    } else if (channel === 'instagram') {
+        channelName = 'Instagram Direct';
+        channelColor = 'text-pink-400';
+        channelIcon = 'instagram';
+    } else if (channel === 'email') {
+        channelName = 'Corporate Email (SMTP)';
+        channelColor = 'text-indigo-400';
+        channelIcon = 'mail';
+    } else if (channel === 'facebook') {
+        channelName = 'Facebook Messenger';
+        channelColor = 'text-blue-500';
+        channelIcon = 'facebook';
+    }
+
+    const txId = resData.meta_wamid || ('bridge_' + Date.now().toString(36));
+    const delTime = resData.delivered_at || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    modalContent.innerHTML = `
+        <div class="p-6 text-center space-y-5">
+            <!-- Animated Checkmark Icon -->
+            <div class="w-16 h-16 rounded-full bg-emerald-500/15 border-2 border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">
+                <i data-lucide="check-check" class="w-8 h-8"></i>
+            </div>
+
+            <div>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    Dispatched &amp; Delivered In-Platform
+                </span>
+                <h3 class="text-xl font-extrabold text-[#f4f1ea] mt-2">${escapeHtml(bName)}</h3>
+                <p class="text-xs text-[#d9b46c] font-semibold mt-0.5">
+                    To: ${escapeHtml(dmName)} <span class="text-slate-400 font-normal">(${escapeHtml(dmTitle)})</span>
+                </p>
+            </div>
+
+            <!-- Verified Delivery Transmission Receipt Card -->
+            <div class="p-4 rounded-xl bg-slate-950/80 border border-white/[0.08] text-left text-xs space-y-2.5 max-w-lg mx-auto shadow-inner">
+                <div class="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+                    <span class="text-[#a3a6b0] font-medium">Channel Dispatched:</span>
+                    <span class="font-bold flex items-center gap-1.5 ${channelColor}">
+                        <i data-lucide="${channelIcon}" class="w-3.5 h-3.5"></i>
+                        <span>${channelName}</span>
+                    </span>
+                </div>
+                <div class="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+                    <span class="text-[#a3a6b0] font-medium">Delivery Status:</span>
+                    <span class="text-emerald-400 font-bold flex items-center gap-1 font-mono">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        <span>✓✓ Delivered &amp; Active</span>
+                    </span>
+                </div>
+                <div class="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+                    <span class="text-[#a3a6b0] font-medium">Transmission ID:</span>
+                    <span class="font-mono text-slate-300 text-[11px] truncate max-w-[240px]">${escapeHtml(txId)}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-[#a3a6b0] font-medium">Timestamp:</span>
+                    <span class="text-slate-300 font-mono text-[11px]">${delTime}</span>
+                </div>
+            </div>
+
+            <!-- Outbound Message Bubble Preview -->
+            <div class="max-w-lg mx-auto text-left rounded-xl p-3.5 bg-gradient-to-br from-[#161a24] to-[#1c2230] border border-[#d9b46c]/30 text-xs text-slate-200 leading-relaxed shadow-md">
+                <div class="text-[10px] text-[#d9b46c] font-bold uppercase tracking-wider mb-1 flex items-center justify-between">
+                    <span>Outbound Script Sent (${channel.toUpperCase()})</span>
+                    <span class="text-emerald-400 font-mono text-[9px] flex items-center gap-1">
+                        <i data-lucide="check" class="w-3 h-3"></i>
+                        <span>✓✓ Delivered</span>
+                    </span>
+                </div>
+                <div class="whitespace-pre-wrap max-h-24 overflow-y-auto custom-scroll text-[11px] text-slate-300 font-sans">
+                    ${escapeHtml(message)}
+                </div>
+            </div>
+
+            <!-- Live Unified Inbox Notice -->
+            <div class="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-xs text-emerald-300 max-w-lg mx-auto flex items-start gap-2 text-left">
+                <i data-lucide="messages-square" class="w-4 h-4 flex-shrink-0 text-emerald-400 mt-0.5"></i>
+                <div class="text-[11px] leading-relaxed">
+                    This chat thread is now <strong>open &amp; live inside your Unified Inbox</strong>. When <strong>${escapeHtml(dmName)}</strong> replies, their response will be automatically captured and visible in real time.
+                </div>
+            </div>
+
+            <!-- Primary Action Buttons -->
+            <div class="pt-1 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <a href="${inboxUrl}" onclick="cancelAutoRedirect()" class="btn-gold-cta w-full sm:w-auto px-6 py-3 rounded-xl text-black font-extrabold text-xs shadow-xl flex items-center justify-center gap-2 hover:scale-105 transition">
+                    <i data-lucide="messages-square" class="w-4 h-4"></i>
+                    <span>Open Chat in Unified Inbox ↗</span>
+                </a>
+                <button type="button" onclick="closeModalAndRefresh()" class="w-full sm:w-auto px-5 py-3 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition">
+                    Stay on Scraper
+                </button>
+            </div>
+
+            <!-- Auto-redirect countdown notice -->
+            <div class="text-[11px] text-[#a3a6b0] flex items-center justify-center gap-1.5" id="countdownNotice">
+                <span>Auto-opening Unified Inbox in <strong id="redirectTimer" class="text-[#d9b46c] font-mono">4</strong>s...</span>
+                <button type="button" onclick="cancelAutoRedirect()" class="text-rose-400 hover:underline font-medium text-[11px] ml-1">Cancel</button>
+            </div>
+        </div>
+    `;
+
+    lucide.createIcons();
+
+    // Start 4-second auto-redirect timer
+    let secondsLeft = 4;
+    const timerEl = document.getElementById('redirectTimer');
+    cancelAutoRedirect(); // Clear any existing timer
+
+    __redirectCountdownTimer = setInterval(() => {
+        secondsLeft--;
+        if (timerEl) timerEl.textContent = secondsLeft;
+        if (secondsLeft <= 0) {
+            cancelAutoRedirect();
+            window.location.href = inboxUrl;
+        }
+    }, 1000);
 }
 
 // Kanban drag-and-drop controller

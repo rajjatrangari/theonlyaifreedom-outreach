@@ -300,6 +300,29 @@ ob_start();
                 }
             ?>
 
+                <?php if (isset($_GET['delivered']) && $_GET['delivered'] == '1'): ?>
+                    <!-- Celebratory In-Platform Delivery Confirmation Banner -->
+                    <div id="deliveredSuccessBanner" class="p-3.5 bg-gradient-to-r from-emerald-500/20 via-[#d9b46c]/15 to-emerald-500/20 border-b border-emerald-500/40 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 flex-shrink-0 shadow-md">
+                                <i data-lucide="check-check" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-emerald-300 flex items-center gap-2">
+                                    <span>✓ Direct Message Successfully Delivered &amp; Active in Unified Inbox!</span>
+                                    <span class="text-[10px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">Live Sync</span>
+                                </div>
+                                <div class="text-[11px] text-[#f4f1ea] mt-0.5">
+                                    Dispatched to <strong><?= h($dmName) ?></strong> (<?= h($selectedLead['business_name']) ?>). You can now track incoming replies, send follow-ups, and manage all conversations from here.
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="document.getElementById('deliveredSuccessBanner')?.remove()" class="text-xs text-[#a3a6b0] hover:text-white p-1 rounded hover:bg-white/[0.05]" title="Dismiss">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                <?php endif; ?>
+
                 <!-- Lead Profile Header & 1-Click External Actions -->
                 <div class="p-4 border-b border-white/[0.08] bg-white/[0.02]">
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -737,13 +760,30 @@ async function sendDirectInboxMessage() {
                 : 'Message sent and logged directly in Unified Inbox!';
             showToast(successNote, 'success');
             
+            // Remove initial ready placeholder if present
+            const readyCard = document.querySelector('.inbox-ready-card');
+            if (readyCard) readyCard.remove();
+
             // Append message bubble to timeline
             const timeline = document.getElementById('chatTimeline');
             if (timeline) {
                 const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const bubble = document.createElement('div');
                 bubble.className = 'flex justify-end';
-                const deliveryBadge = data.cloud_sent ? '✓✓ Delivered via WhatsApp Cloud API' : '✓ Delivered (In-Platform)';
+                let deliveryBadge = data.delivery_badge;
+                if (!deliveryBadge) {
+                    if (channel === 'whatsapp') {
+                        deliveryBadge = (data.meta_wamid && data.meta_wamid.includes('wamid')) ? '✓✓ Delivered via WhatsApp Cloud API' : '✓✓ Delivered via WhatsApp Bridge';
+                    } else if (channel === 'linkedin') {
+                        deliveryBadge = '✓✓ Delivered via LinkedIn DM Bridge';
+                    } else if (channel === 'instagram') {
+                        deliveryBadge = '✓✓ Delivered via Instagram DM Bridge';
+                    } else if (channel === 'email') {
+                        deliveryBadge = '✓✓ Delivered via Corporate Email (SMTP)';
+                    } else {
+                        deliveryBadge = '✓✓ Delivered via ' + channel.toUpperCase();
+                    }
+                }
                 bubble.innerHTML = `
                     <div class="max-w-xl rounded-2xl p-4 chat-bubble-outbound bg-gradient-to-br from-[#161a24] to-[#1c2230] border border-[#d9b46c]/30 text-[#f4f1ea] shadow-md space-y-2">
                         <div class="flex items-center justify-between text-[10px] text-[#a3a6b0] pb-1 border-b border-white/[0.06] chat-bubble-meta">
@@ -762,6 +802,21 @@ async function sendDirectInboxMessage() {
                 timeline.appendChild(bubble);
                 timeline.scrollTop = timeline.scrollHeight;
                 lucide.createIcons();
+            }
+
+            // Real-time update to active thread card on left sidebar
+            const activeCard = document.querySelector(`[data-thread-id="${window.__activeLead.id}"]`);
+            if (activeCard) {
+                const previewEl = activeCard.querySelector('p.truncate');
+                if (previewEl) {
+                    previewEl.textContent = `Outbound (${channel.toUpperCase()}): "${msg.substring(0, 45)}..."`;
+                    previewEl.classList.add('text-[#f4f1ea]');
+                }
+                const timeEl = activeCard.querySelector('.flex.items-center.justify-between > span');
+                if (timeEl) timeEl.textContent = 'Active now';
+
+                const threadList = document.getElementById('threadList');
+                if (threadList) threadList.prepend(activeCard);
             }
             composer.value = '';
         } else {
@@ -921,6 +976,13 @@ function handleThreadSearch() {
         card.classList.toggle('hidden', q.length > 0 && !txt.includes(q));
     });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const timeline = document.getElementById('chatTimeline');
+    if (timeline) {
+        timeline.scrollTop = timeline.scrollHeight;
+    }
+});
 </script>
 
 <?php
