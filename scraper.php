@@ -263,13 +263,9 @@ window.__savedCrmLeads = <?= json_encode($crmLeads) ?>;
 window.__activeViewTab = 'discovered';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Automatically trigger initial search if discovered leads is empty, or show saved CRM leads
-    if (window.__savedCrmLeads && window.__savedCrmLeads.length > 0) {
-        switchViewTab('saved');
-    } else {
-        // Run initial discovery for Nagpur Jewellery Brands
-        runAutoInitialScrape();
-    }
+    // Always start on Discovered Leads tab and immediately trigger live discovery for 60+ fresh leads
+    switchViewTab('discovered');
+    runAutoInitialScrape();
 });
 
 function toggleBlueprintDetails() {
@@ -556,7 +552,15 @@ async function saveAllDiscoveredLeads() {
         if (data.status === 'success') {
             showToast(`Saved all ${data.saved_count} leads to your CRM Pipeline!`, 'success');
             // Refresh saved leads list
-            const refreshRes = await fetch('/api.php?action=get_saved_leads');
+            try {
+                const refreshRes = await fetch('/api.php?action=get_saved_leads');
+                const refreshData = await refreshRes.json();
+                if (refreshData.status === 'success') {
+                    window.__savedCrmLeads = refreshData.leads;
+                    const savedBadge = document.getElementById('savedCountBadge');
+                    if (savedBadge) savedBadge.textContent = `${window.__savedCrmLeads.length} Saved`;
+                }
+            } catch(e) {}
             window.__discoveredLeads.forEach(l => l.is_saved_in_crm = true);
             renderLeadsTable(window.__discoveredLeads, false);
         } else {
@@ -598,6 +602,15 @@ async function saveSelectedLeads() {
         if (data.status === 'success') {
             showToast(`Saved ${toSave.length} leads to your CRM Pipeline!`, 'success');
             toSave.forEach(l => l.is_saved_in_crm = true);
+            try {
+                const refreshRes = await fetch('/api.php?action=get_saved_leads');
+                const refreshData = await refreshRes.json();
+                if (refreshData.status === 'success') {
+                    window.__savedCrmLeads = refreshData.leads;
+                    const savedBadge = document.getElementById('savedCountBadge');
+                    if (savedBadge) savedBadge.textContent = `${window.__savedCrmLeads.length} Saved`;
+                }
+            } catch(e) {}
             renderLeadsTable(currentList, window.__activeViewTab === 'saved');
         } else {
             showToast(data.message || 'Save failed', 'error');
@@ -625,6 +638,15 @@ async function saveSingleLeadDirect(idx) {
             showToast(`Saved ${lead.business_name} to CRM!`, 'success');
             lead.is_saved_in_crm = true;
             lead.id = data.lead_id;
+            try {
+                const refreshRes = await fetch('/api.php?action=get_saved_leads');
+                const refreshData = await refreshRes.json();
+                if (refreshData.status === 'success') {
+                    window.__savedCrmLeads = refreshData.leads;
+                    const savedBadge = document.getElementById('savedCountBadge');
+                    if (savedBadge) savedBadge.textContent = `${window.__savedCrmLeads.length} Saved`;
+                }
+            } catch(e) {}
             renderLeadsTable(window.__discoveredLeads, false);
         } else {
             showToast(data.message || 'Save failed', 'error');

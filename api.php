@@ -346,6 +346,16 @@ switch ($action) {
         ]);
         break;
 
+    // 13. Get Saved CRM Leads
+    case 'get_saved_leads':
+        $savedList = all("SELECT * FROM leads WHERE user_id = ? ORDER BY id DESC LIMIT 200", [$user['id']]);
+        json_response([
+            'status' => 'success',
+            'leads' => $savedList,
+            'count' => count($savedList)
+        ]);
+        break;
+
     default:
         json_response(['status' => 'error', 'message' => 'Unknown API action.'], 400);
         break;

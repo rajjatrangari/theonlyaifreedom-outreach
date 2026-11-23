@@ -721,7 +721,7 @@ class ScraperEngine {
                     'email' => 'info@tbzoriginal.com',
                     'linkedin_url' => 'https://www.linkedin.com/company/tbztheoriginal/',
                     'instagram_url' => 'https://www.instagram.com/tbztheoriginal/',
-                    'address' => "TBZ Heritage House, {$cityProfile['areas'][2] ?? $cityProfile['areas'][0]}, {$city}",
+                    'address' => "TBZ Heritage House, " . ($cityProfile['areas'][2] ?? $cityProfile['areas'][0]) . ", {$city}",
                     'category' => 'Heritage Bridal & Gold Solitaires',
                     'reviews_count' => 880,
                     'rating' => 4.7,
