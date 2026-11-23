@@ -662,6 +662,306 @@ html[data-mode="light"] .social-icon-btn {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
 }
 
+/* ==========================================================
+   UNIFIED INBOX LIGHT MODE ULTRA-HIGH CONTRAST ENGINE
+   ========================================================== */
+html[data-mode="light"] #chatTimeline {
+    background-color: #f6f3eb !important;
+    border: 1px solid rgba(20, 16, 10, 0.12) !important;
+}
+
+/* Outbound Chat Bubble (User's message) in Light Mode */
+html[data-mode="light"] .chat-bubble-outbound {
+    background: #ffffff !important;
+    border: 1.5px solid #d9b46c !important;
+    box-shadow: 0 4px 18px rgba(180, 140, 40, 0.12) !important;
+}
+
+html[data-mode="light"] .chat-bubble-outbound .chat-bubble-text {
+    color: #0f172a !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
+html[data-mode="light"] .chat-bubble-outbound .chat-bubble-meta {
+    border-bottom: 1px solid rgba(20, 16, 10, 0.10) !important;
+}
+
+html[data-mode="light"] .chat-bubble-outbound .chat-bubble-meta span {
+    color: #475569 !important;
+    font-weight: 600 !important;
+}
+
+html[data-mode="light"] .chat-bubble-outbound .chat-bubble-meta .text-\[\#d9b46c\] {
+    color: #8f651a !important;
+    font-weight: 800 !important;
+}
+
+html[data-mode="light"] .chat-bubble-outbound .chat-bubble-footer span {
+    color: #047857 !important;
+    font-weight: 700 !important;
+}
+
+/* Inbound Chat Bubble (Prospect's reply) in Light Mode */
+html[data-mode="light"] .chat-bubble-inbound {
+    background: #f0fdf4 !important;
+    border: 1.5px solid #86efac !important;
+    box-shadow: 0 4px 18px rgba(16, 185, 129, 0.10) !important;
+}
+
+html[data-mode="light"] .chat-bubble-inbound .chat-bubble-text {
+    color: #064e3b !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+}
+
+html[data-mode="light"] .chat-bubble-inbound .chat-bubble-meta {
+    border-bottom: 1px solid rgba(16, 185, 129, 0.25) !important;
+}
+
+html[data-mode="light"] .chat-bubble-inbound .chat-bubble-meta span {
+    color: #065f46 !important;
+    font-weight: 700 !important;
+}
+
+html[data-mode="light"] .chat-bubble-inbound .text-emerald-400 {
+    color: #047857 !important;
+    font-weight: 800 !important;
+}
+
+/* Chat System Timeline Anchor */
+html[data-mode="light"] #chatTimeline span.font-mono {
+    background-color: #ede6d6 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+    font-weight: 700 !important;
+}
+
+/* Active Nudge Banner in Light Mode */
+html[data-mode="light"] .bg-gradient-to-r.from-emerald-500\/15 {
+    background: #ecfdf5 !important;
+    border-bottom: 2px solid #a7f3d0 !important;
+}
+
+html[data-mode="light"] .bg-gradient-to-r.from-emerald-500\/15 .text-emerald-400 {
+    color: #065f46 !important;
+    font-weight: 800 !important;
+}
+
+html[data-mode="light"] .bg-gradient-to-r.from-emerald-500\/15 .text-\[\#f4f1ea\] {
+    color: #0f172a !important;
+    font-weight: 600 !important;
+}
+
+/* Left Thread Cards in Light Mode */
+html[data-mode="light"] .thread-card {
+    border-bottom: 1px solid rgba(20, 16, 10, 0.08) !important;
+}
+
+html[data-mode="light"] .thread-card:hover {
+    background-color: rgba(217, 180, 108, 0.10) !important;
+}
+
+html[data-mode="light"] .thread-card.border-l-4,
+html[data-mode="light"] .thread-card.bg-white\/\[0\.06\] {
+    background-color: rgba(217, 180, 108, 0.20) !important;
+    border-left: 4px solid #8f651a !important;
+}
+
+html[data-mode="light"] .thread-card h4 {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    font-size: 13px !important;
+}
+
+html[data-mode="light"] .thread-card p {
+    color: #475569 !important;
+    font-weight: 500 !important;
+}
+
+html[data-mode="light"] .thread-card .text-\[\#a3a6b0\] {
+    color: #475569 !important;
+    font-weight: 600 !important;
+}
+
+html[data-mode="light"] .thread-card .text-\[\#d9b46c\] {
+    color: #8f651a !important;
+    font-weight: 700 !important;
+}
+
+html[data-mode="light"] .thread-card .w-10.h-10 {
+    background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+    color: #f3dca4 !important;
+    border: 1.5px solid #d9b46c !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+html[data-mode="light"] .thread-card .w-5.h-5 {
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+}
+
+/* Channel Tabs in Light Mode */
+html[data-mode="light"] .channel-tab-btn {
+    color: #334155 !important;
+    font-weight: 700 !important;
+}
+
+html[data-mode="light"] .channel-tab-btn span.rounded-full {
+    background: #e2e8f0 !important;
+    color: #1e293b !important;
+    font-weight: 800 !important;
+}
+
+html[data-mode="light"] .channel-tab-btn.active-tab,
+html[data-mode="light"] .channel-tab-btn.bg-\[\#d9b46c\] {
+    background-color: #d9b46c !important;
+    color: #07080c !important;
+    font-weight: 800 !important;
+}
+
+html[data-mode="light"] .channel-tab-btn.active-tab span.rounded-full,
+html[data-mode="light"] .channel-tab-btn.bg-\[\#d9b46c\] span.rounded-full {
+    background: rgba(0, 0, 0, 0.2) !important;
+    color: #07080c !important;
+    font-weight: 800 !important;
+}
+
+/* Presence Filter Buttons in Light Mode */
+html[data-mode="light"] .presence-btn {
+    background-color: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #334155 !important;
+    font-weight: 700 !important;
+}
+
+html[data-mode="light"] .presence-btn.active-presence,
+html[data-mode="light"] .presence-btn.bg-\[\#d9b46c\]\/20 {
+    background-color: rgba(217, 180, 108, 0.25) !important;
+    border: 1.5px solid #8f651a !important;
+    color: #78350f !important;
+    font-weight: 800 !important;
+}
+
+/* Language Switcher in Light Mode */
+html[data-mode="light"] .inbox-lang-btn {
+    background-color: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #334155 !important;
+    font-weight: 700 !important;
+}
+
+html[data-mode="light"] .inbox-lang-btn.active-lang,
+html[data-mode="light"] .inbox-lang-btn.bg-\[\#d9b46c\]\/20 {
+    background-color: #fef3c7 !important;
+    border: 1.5px solid #d97706 !important;
+    color: #78350f !important;
+    font-weight: 800 !important;
+}
+
+/* Quick Response Playbook Chips in Light Mode */
+html[data-mode="light"] button[onclick*="insertPlaybookReply"] {
+    background-color: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-mode="light"] button[onclick*="insertPlaybookReply"]:hover {
+    background-color: #f8fafc !important;
+    border-color: #8f651a !important;
+}
+
+/* Bottom Composer Controls in Light Mode */
+html[data-mode="light"] #inboxComposer {
+    background-color: #ffffff !important;
+    color: #0f1117 !important;
+    font-weight: 600 !important;
+    border: 1.5px solid #cbd5e1 !important;
+}
+
+html[data-mode="light"] #inboxComposer::placeholder {
+    color: #64748b !important;
+}
+
+html[data-mode="light"] #inboxChannelSelect {
+    background-color: #ffffff !important;
+    color: #0f1117 !important;
+    font-weight: 700 !important;
+    border: 1.5px solid #cbd5e1 !important;
+}
+
+html[data-mode="light"] button[onclick="openInExternalApp()"] {
+    background-color: #ffffff !important;
+    color: #0f1117 !important;
+    font-weight: 700 !important;
+    border: 1.5px solid #cbd5e1 !important;
+}
+
+/* External Jump Buttons in Prospect Header */
+html[data-mode="light"] a[title*="WhatsApp Web"] {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+    border: 1.5px solid #10b981 !important;
+    font-weight: 700 !important;
+}
+
+html[data-mode="light"] a[title*="LinkedIn"] {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+    border: 1.5px solid #3b82f6 !important;
+    font-weight: 700 !important;
+}
+
+html[data-mode="light"] a[title*="Instagram"] {
+    background-color: #fce7f3 !important;
+    color: #9d174d !important;
+    border: 1.5px solid #ec4899 !important;
+    font-weight: 700 !important;
+}
+
+html[data-mode="light"] a[title*="Website"] {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border: 1.5px solid #cbd5e1 !important;
+    font-weight: 700 !important;
+}
+
+/* ==========================================================
+   CRM KANBAN LIGHT MODE ENGINE
+   ========================================================== */
+html[data-mode="light"] .kanban-col {
+    background-color: #f7f3ec !important;
+    border: 1.5px solid rgba(20, 16, 10, 0.12) !important;
+}
+
+html[data-mode="light"] .kanban-col > div:first-child {
+    background-color: #ede6d8 !important;
+    border-bottom: 2px solid rgba(20, 16, 10, 0.12) !important;
+}
+
+html[data-mode="light"] .kanban-card {
+    background-color: #ffffff !important;
+    border: 1.5px solid rgba(20, 16, 10, 0.12) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-mode="light"] .kanban-card:hover {
+    border-color: #8f651a !important;
+    box-shadow: 0 4px 16px rgba(143, 101, 26, 0.15) !important;
+}
+
+html[data-mode="light"] .kanban-card .text-\[\#f4f1ea\] {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+}
+
+html[data-mode="light"] .kanban-card .text-\[\#a3a6b0\] {
+    color: #475569 !important;
+    font-weight: 600 !important;
+}
+
 /* Modal animation */
 #modalBackdrop.flex {
     animation: fadeIn 0.2s ease-out forwards;

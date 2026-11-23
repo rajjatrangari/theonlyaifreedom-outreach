@@ -100,7 +100,7 @@ ob_start();
 
         <!-- Channel Filter Tabs -->
         <div class="flex items-center gap-1.5 overflow-x-auto max-w-full p-1 rounded-xl bg-white/[0.03] border border-white/[0.08] custom-scroll">
-            <button type="button" onclick="filterChannel('all')" id="tab-all" class="channel-tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-[#d9b46c] text-black shadow-sm">
+            <button type="button" onclick="filterChannel('all')" id="tab-all" class="channel-tab-btn active-tab px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-[#d9b46c] text-black shadow-sm">
                 <span>All Inboxes</span>
                 <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 text-black font-extrabold"><?= $channelCounts['all'] ?></span>
             </button>
@@ -146,7 +146,7 @@ ob_start();
                            class="w-full bg-[#11141c] border border-white/[0.08] rounded-xl pl-9 pr-3 py-2 text-xs text-[#f4f1ea] placeholder-[#6e7280] focus:outline-none focus:border-[#d9b46c]">
                 </div>
                 <div class="flex items-center gap-1.5">
-                    <button type="button" onclick="filterPresence('all')" id="presence-all" class="presence-btn px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#d9b46c]/20 text-[#f3dca4] border border-[#d9b46c]/40">All</button>
+                    <button type="button" onclick="filterPresence('all')" id="presence-all" class="presence-btn active-presence px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#d9b46c]/20 text-[#f3dca4] border border-[#d9b46c]/40">All</button>
                     <button type="button" onclick="filterPresence('active')" id="presence-active" class="presence-btn px-2.5 py-1 rounded-lg text-[11px] font-medium text-[#a3a6b0] hover:text-white bg-white/[0.03] border border-white/[0.06]">● Active Now</button>
                     <button type="button" onclick="filterPresence('replied')" id="presence-replied" class="presence-btn px-2.5 py-1 rounded-lg text-[11px] font-medium text-[#a3a6b0] hover:text-white bg-white/[0.03] border border-white/[0.06]">💬 Replies</button>
                 </div>
@@ -447,18 +447,18 @@ ob_start();
                         $isOutbound = ($msg['direction'] ?? 'outbound') === 'outbound';
                     ?>
                         <div class="flex <?= $isOutbound ? 'justify-end' : 'justify-start' ?>">
-                            <div class="max-w-xl rounded-2xl p-4 <?= $isOutbound ? 'bg-gradient-to-br from-[#161a24] to-[#1c2230] border border-[#d9b46c]/30 text-[#f4f1ea]' : 'bg-[#161a24] border border-white/[0.12] text-[#f4f1ea]' ?> shadow-md space-y-2">
-                                <div class="flex items-center justify-between text-[10px] text-[#a3a6b0] pb-1 border-b border-white/[0.06]">
+                            <div class="max-w-xl rounded-2xl p-4 <?= $isOutbound ? 'chat-bubble-outbound bg-gradient-to-br from-[#161a24] to-[#1c2230] border border-[#d9b46c]/30 text-[#f4f1ea]' : 'chat-bubble-inbound bg-[#161a24] border border-white/[0.12] text-[#f4f1ea]' ?> shadow-md space-y-2">
+                                <div class="flex items-center justify-between text-[10px] text-[#a3a6b0] pb-1 border-b border-white/[0.06] chat-bubble-meta">
                                     <span class="font-bold uppercase tracking-wider flex items-center gap-1 <?= $isOutbound ? 'text-[#d9b46c]' : 'text-emerald-400' ?>">
                                         <i data-lucide="<?= $isOutbound ? 'send' : 'message-square' ?>" class="w-3 h-3"></i>
                                         <span><?= $isOutbound ? 'Outbound (' . ucfirst($msg['channel']) . ')' : h($dmName) . ' (' . ucfirst($msg['channel']) . ')' ?></span>
                                     </span>
                                     <span class="font-mono"><?= date('M j, g:i A', strtotime($msg['created_at'])) ?></span>
                                 </div>
-                                <div class="text-xs leading-relaxed whitespace-pre-wrap font-sans">
+                                <div class="text-xs leading-relaxed whitespace-pre-wrap font-sans chat-bubble-text">
                                     <?= nl2br(h($msg['message_sent'])) ?>
                                 </div>
-                                <div class="text-[10px] text-right text-[#a3a6b0] flex items-center justify-end gap-1 font-mono">
+                                <div class="text-[10px] text-right text-[#a3a6b0] flex items-center justify-end gap-1 font-mono chat-bubble-footer">
                                     <span><?= $isOutbound ? '✓✓ Delivered' : 'Received' ?></span>
                                 </div>
                             </div>
@@ -468,18 +468,18 @@ ob_start();
                     <!-- Inbound Prospect Reply Bubble (If present on lead record) -->
                     <?php if (!empty($selectedLead['last_reply_message'])): ?>
                         <div class="flex justify-start">
-                            <div class="max-w-xl rounded-2xl p-4 bg-gradient-to-br from-emerald-950/40 to-[#11141c] border border-emerald-500/40 text-[#f4f1ea] shadow-lg space-y-2">
-                                <div class="flex items-center justify-between text-[10px] pb-1 border-b border-emerald-500/20">
+                            <div class="max-w-xl rounded-2xl p-4 chat-bubble-inbound bg-gradient-to-br from-emerald-950/40 to-[#11141c] border border-emerald-500/40 text-[#f4f1ea] shadow-lg space-y-2">
+                                <div class="flex items-center justify-between text-[10px] pb-1 border-b border-emerald-500/20 chat-bubble-meta">
                                     <span class="font-bold uppercase tracking-wider flex items-center gap-1.5 text-emerald-400">
                                         <i data-lucide="message-square-reply" class="w-3.5 h-3.5"></i>
                                         <span>Incoming Reply via <?= ucfirst($selectedLead['last_reply_channel'] ?: $selPlatform) ?></span>
                                     </span>
                                     <span class="text-[#a3a6b0] font-mono"><?= date('g:i A', strtotime($selectedLead['last_activity_at'] ?: now())) ?></span>
                                 </div>
-                                <div class="text-xs text-[#f4f1ea] font-medium leading-relaxed">
+                                <div class="text-xs text-[#f4f1ea] font-medium leading-relaxed chat-bubble-text">
                                     "<?= h($selectedLead['last_reply_message']) ?>"
                                 </div>
-                                <div class="pt-1 flex items-center justify-between text-[10px] text-emerald-400">
+                                <div class="pt-1 flex items-center justify-between text-[10px] text-emerald-400 chat-bubble-footer">
                                     <span>● High-Intent Prospect Response</span>
                                     <button type="button" onclick="insertPlaybookReply('reply_interested')" class="text-[#d9b46c] hover:underline font-bold">1-Click Auto Reply ↗</button>
                                 </div>
@@ -501,7 +501,7 @@ ob_start();
                         
                         <!-- 4-Language Switcher for Replies -->
                         <div class="flex items-center gap-1 text-[10px]">
-                            <button type="button" onclick="setReplyLanguage('en')" id="inbox-lang-en" class="inbox-lang-btn px-2 py-0.5 rounded font-bold bg-[#d9b46c]/20 text-[#f3dca4] border border-[#d9b46c]/40">🇬🇧 English</button>
+                            <button type="button" onclick="setReplyLanguage('en')" id="inbox-lang-en" class="inbox-lang-btn active-lang px-2 py-0.5 rounded font-bold bg-[#d9b46c]/20 text-[#f3dca4] border border-[#d9b46c]/40">🇬🇧 English</button>
                             <button type="button" onclick="setReplyLanguage('hinglish')" id="inbox-lang-hinglish" class="inbox-lang-btn px-2 py-0.5 rounded font-medium text-[#a3a6b0] hover:text-white bg-white/[0.04]">🇮🇳 Hinglish</button>
                             <button type="button" onclick="setReplyLanguage('hi')" id="inbox-lang-hi" class="inbox-lang-btn px-2 py-0.5 rounded font-medium text-[#a3a6b0] hover:text-white bg-white/[0.04]">🇮🇳 हिंदी</button>
                             <button type="button" onclick="setReplyLanguage('mr')" id="inbox-lang-mr" class="inbox-lang-btn px-2 py-0.5 rounded font-medium text-[#a3a6b0] hover:text-white bg-white/[0.04]">🚩 मराठी</button>
@@ -588,12 +588,12 @@ let activeLang = 'en';
 function setReplyLanguage(lang) {
     activeLang = lang;
     document.querySelectorAll('.inbox-lang-btn').forEach(b => {
-        b.classList.remove('bg-[#d9b46c]/20', 'text-[#f3dca4]', 'border-[#d9b46c]/40', 'font-bold');
+        b.classList.remove('active-lang', 'bg-[#d9b46c]/20', 'text-[#f3dca4]', 'border-[#d9b46c]/40', 'font-bold');
         b.classList.add('text-[#a3a6b0]', 'bg-white/[0.04]');
     });
     const el = document.getElementById('inbox-lang-' + lang);
     if (el) {
-        el.classList.add('bg-[#d9b46c]/20', 'text-[#f3dca4]', 'border', 'border-[#d9b46c]/40', 'font-bold');
+        el.classList.add('active-lang', 'bg-[#d9b46c]/20', 'text-[#f3dca4]', 'border', 'border-[#d9b46c]/40', 'font-bold');
         el.classList.remove('text-[#a3a6b0]', 'bg-white/[0.04]');
     }
 }
@@ -703,16 +703,16 @@ async function sendDirectInboxMessage() {
                 const bubble = document.createElement('div');
                 bubble.className = 'flex justify-end';
                 bubble.innerHTML = `
-                    <div class="max-w-xl rounded-2xl p-4 bg-gradient-to-br from-[#161a24] to-[#1c2230] border border-[#d9b46c]/30 text-[#f4f1ea] shadow-md space-y-2">
-                        <div class="flex items-center justify-between text-[10px] text-[#a3a6b0] pb-1 border-b border-white/[0.06]">
+                    <div class="max-w-xl rounded-2xl p-4 chat-bubble-outbound bg-gradient-to-br from-[#161a24] to-[#1c2230] border border-[#d9b46c]/30 text-[#f4f1ea] shadow-md space-y-2">
+                        <div class="flex items-center justify-between text-[10px] text-[#a3a6b0] pb-1 border-b border-white/[0.06] chat-bubble-meta">
                             <span class="font-bold uppercase tracking-wider flex items-center gap-1 text-[#d9b46c]">
                                 <i data-lucide="send" class="w-3 h-3"></i>
                                 <span>Outbound (${channel.toUpperCase()})</span>
                             </span>
                             <span class="font-mono">${nowStr}</span>
                         </div>
-                        <div class="text-xs leading-relaxed whitespace-pre-wrap">${msg.replace(/\n/g, '<br>')}</div>
-                        <div class="text-[10px] text-right text-[#a3a6b0] flex items-center justify-end gap-1 font-mono">
+                        <div class="text-xs leading-relaxed whitespace-pre-wrap font-sans chat-bubble-text">${msg.replace(/\n/g, '<br>')}</div>
+                        <div class="text-[10px] text-right text-[#a3a6b0] flex items-center justify-end gap-1 font-mono chat-bubble-footer">
                             <span>✓✓ Delivered</span>
                         </div>
                     </div>
@@ -761,12 +761,12 @@ function selectThread(leadId) {
 
 function filterChannel(channel) {
     document.querySelectorAll('.channel-tab-btn').forEach(btn => {
-        btn.classList.remove('bg-[#d9b46c]', 'text-black', 'shadow-sm', 'font-bold');
+        btn.classList.remove('active-tab', 'bg-[#d9b46c]', 'text-black', 'shadow-sm', 'font-bold');
         btn.classList.add('text-[#a3a6b0]', 'font-semibold');
     });
     const activeBtn = document.getElementById('tab-' + channel);
     if (activeBtn) {
-        activeBtn.classList.add('bg-[#d9b46c]', 'text-black', 'shadow-sm', 'font-bold');
+        activeBtn.classList.add('active-tab', 'bg-[#d9b46c]', 'text-black', 'shadow-sm', 'font-bold');
         activeBtn.classList.remove('text-[#a3a6b0]', 'font-semibold');
     }
 
@@ -783,12 +783,12 @@ function filterChannel(channel) {
 
 function filterPresence(filter) {
     document.querySelectorAll('.presence-btn').forEach(b => {
-        b.classList.remove('bg-[#d9b46c]/20', 'text-[#f3dca4]', 'border-[#d9b46c]/40', 'font-bold');
+        b.classList.remove('active-presence', 'bg-[#d9b46c]/20', 'text-[#f3dca4]', 'border-[#d9b46c]/40', 'font-bold');
         b.classList.add('text-[#a3a6b0]', 'bg-white/[0.03]');
     });
     const el = document.getElementById('presence-' + filter);
     if (el) {
-        el.classList.add('bg-[#d9b46c]/20', 'text-[#f3dca4]', 'border-[#d9b46c]/40', 'font-bold');
+        el.classList.add('active-presence', 'bg-[#d9b46c]/20', 'text-[#f3dca4]', 'border-[#d9b46c]/40', 'font-bold');
         el.classList.remove('text-[#a3a6b0]', 'bg-white/[0.03]');
     }
 
