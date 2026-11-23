@@ -201,9 +201,9 @@ class ScraperEngine {
         $twitter = $l['twitter_url'] ?? '';
         $facebook = $l['facebook_url'] ?? '';
 
-        $metaAdsActive = isset($l['meta_ads_active']) ? (int)$l['meta_ads_active'] : 1;
-        $metaAdsCount = isset($l['meta_ads_count']) ? (int)$l['meta_ads_count'] : 12;
-        $metaAdsSince = !empty($l['meta_ads_running_since']) ? $l['meta_ads_running_since'] : 'Active since Oct 2024';
+        $metaAdsActive = isset($l['meta_ads_active']) ? (int)$l['meta_ads_active'] : 0;
+        $metaAdsCount = isset($l['meta_ads_count']) ? (int)$l['meta_ads_count'] : 0;
+        $metaAdsSince = !empty($l['meta_ads_running_since']) ? $l['meta_ads_running_since'] : '';
         $metaAdsUrl = !empty($l['meta_ads_library_url']) ? $l['meta_ads_library_url'] : ('https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=' . urlencode($businessName));
 
         $igFollowers = isset($l['instagram_followers']) ? (int)$l['instagram_followers'] : 65000;
@@ -871,10 +871,11 @@ class ScraperEngine {
             $webDomain = "";
             $email = "connect." . substr($cleanSlug, 0, 16) . "@gmail.com";
 
-            // Meta Ads status: 65% are running live active Meta ads
-            $hasMetaAds = ($i % 3 !== 0);
-            $adsCount = $hasMetaAds ? rand(6, 32) : 0;
-            $adsSince = $hasMetaAds ? ('Active since ' . date('M Y', strtotime('-' . rand(3, 14) . ' months'))) : '';
+            // Meta Ads status: Procedural candidates are NOT automatically stamped with fake ad numbers.
+            // Direct 1-click Meta Ad Library URL is provided so user can audit live ads with 100% transparency.
+            $hasMetaAds = false;
+            $adsCount = 0;
+            $adsSince = '';
             $metaUrl = 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=' . urlencode($bName);
 
             // Direct Decision Maker LinkedIn 1-Click People Search & Profile URL

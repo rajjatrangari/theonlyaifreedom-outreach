@@ -566,6 +566,16 @@ function migrate_database(PDO $pdo, string $driver): void {
         }
     } catch (Throwable $e) {}
 
+    // Reset unverified procedural leads so they don't carry fake ad counts
+    try {
+        $pdo->exec("UPDATE leads SET meta_ads_active = 0, meta_ads_count = 0, meta_ads_running_since = '' WHERE business_name NOT IN ('Batukbhai Sons Jewellers (Nagpur)', 'Tanishq Jewellery', 'Titan Company Limited', 'PNG Jewellers', 'Tribhovandas Bhimji Zaveri (TBZ The Original)')");
+    } catch (Throwable $e) {}
+
+    // Ensure all leads have verified Meta Ad Library links
+    try {
+        $pdo->exec("UPDATE leads SET meta_ads_library_url = 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=' || REPLACE(business_name, ' ', '+') WHERE meta_ads_library_url IS NULL OR meta_ads_library_url = ''");
+    } catch (Throwable $e) {}
+
     seed_default_admin($pdo);
 }
 

@@ -316,6 +316,12 @@ ob_start();
                                         <span>📢 <?= (int)$selectedLead['meta_ads_count'] ?> Active Ads (<?= h($selectedLead['meta_ads_running_since'] ?: 'Active') ?>)</span>
                                         <i data-lucide="external-link" class="w-2.5 h-2.5"></i>
                                     </a>
+                                <?php else: ?>
+                                    <a href="<?= h($selectedLead['meta_ads_library_url'] ?: 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=' . urlencode($selectedLead['business_name'])) ?>" 
+                                       target="_blank" class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 hover:text-[#d9b46c] border border-white/[0.08] text-[10px] font-semibold flex items-center gap-1 transition" title="Audit Live Ads in Meta Ad Library">
+                                        <i data-lucide="search" class="w-2.5 h-2.5"></i>
+                                        <span>Audit Meta Ads ↗</span>
+                                    </a>
                                 <?php endif; ?>
                             </div>
 

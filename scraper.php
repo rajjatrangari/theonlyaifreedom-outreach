@@ -673,12 +673,20 @@ function renderLeadsTable(leads, isSavedView) {
                     ${lead.meta_ads_active == 1 ? `
                         <div class="mt-1">
                             <a href="${escapeHtml(lead.meta_ads_library_url || 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=' + encodeURIComponent(lead.business_name))}" 
-                               target="_blank" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 text-[10px] font-bold border border-blue-500/30 hover:underline">
+                               target="_blank" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 text-[10px] font-bold border border-blue-500/30 hover:underline" title="Verified Active Meta Ad Campaigns">
                                 <i data-lucide="radio" class="w-2.5 h-2.5"></i>
                                 <span>📢 ${lead.meta_ads_count} Active Ads (${escapeHtml(lead.meta_ads_running_since || 'Active')})</span>
                             </a>
                         </div>
-                    ` : ''}
+                    ` : `
+                        <div class="mt-1">
+                            <a href="${escapeHtml(lead.meta_ads_library_url || 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=' + encodeURIComponent(lead.business_name))}" 
+                               target="_blank" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-800/80 text-slate-400 text-[10px] font-semibold border border-white/[0.08] hover:text-[#d9b46c] hover:border-[#d9b46c]/40 transition" title="Audit Live Ads in Meta Ad Library">
+                                <i data-lucide="search" class="w-2.5 h-2.5"></i>
+                                <span>Audit Meta Ads ↗</span>
+                            </a>
+                        </div>
+                    `}
                 </td>
 
                 <!-- Paying Capacity (Q-Score) -->
@@ -1025,8 +1033,10 @@ function openScoreAuditModalFromData(leadJsonEnc) {
             <div class="grid grid-cols-2 gap-3 text-xs">
                 <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                     <div class="text-[#a3a6b0] text-[11px] subtext-contrast">Meta Ads Status</div>
-                    <div class="font-bold text-[#f4f1ea] mt-0.5">${lead.meta_ads_active == 1 ? `${lead.meta_ads_count} Active Campaigns` : 'No Active Ads'}</div>
-                    <span class="text-[10px] text-blue-400 font-mono">${escapeHtml(lead.meta_ads_running_since || 'Organic Growth')}</span>
+                    <div class="font-bold text-[#f4f1ea] mt-0.5">${lead.meta_ads_active == 1 ? `${lead.meta_ads_count} Active Campaigns` : 'No Live Ads Detected'}</div>
+                    <a href="${escapeHtml(lead.meta_ads_library_url || 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=' + encodeURIComponent(lead.business_name))}" target="_blank" class="text-[10px] text-[#d9b46c] hover:underline flex items-center gap-1 mt-1 font-semibold">
+                        <span>Audit in Meta Ad Library ↗</span>
+                    </a>
                 </div>
                 <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                     <div class="text-[#a3a6b0] text-[11px] subtext-contrast">Direct WhatsApp Access</div>
