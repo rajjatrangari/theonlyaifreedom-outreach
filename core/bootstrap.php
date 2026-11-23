@@ -252,12 +252,17 @@ function migrate_database(PDO $pdo, string $driver): void {
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 user_id INT NOT NULL,
                 business_name VARCHAR(255) NOT NULL,
+                decision_maker_name VARCHAR(150) DEFAULT '',
+                decision_maker_title VARCHAR(100) DEFAULT 'Founder & Managing Director',
                 website VARCHAR(255) DEFAULT '',
                 website_status VARCHAR(50) DEFAULT 'verified',
                 phone VARCHAR(50) DEFAULT '',
                 whatsapp VARCHAR(50) DEFAULT '',
                 email VARCHAR(191) DEFAULT '',
+                decision_maker_email VARCHAR(191) DEFAULT '',
+                decision_maker_phone VARCHAR(50) DEFAULT '',
                 linkedin_url VARCHAR(255) DEFAULT '',
+                decision_maker_linkedin VARCHAR(255) DEFAULT '',
                 instagram_url VARCHAR(255) DEFAULT '',
                 youtube_url VARCHAR(255) DEFAULT '',
                 twitter_url VARCHAR(255) DEFAULT '',
@@ -359,12 +364,17 @@ function migrate_database(PDO $pdo, string $driver): void {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
                 business_name TEXT NOT NULL,
+                decision_maker_name TEXT DEFAULT '',
+                decision_maker_title TEXT DEFAULT 'Founder & Managing Director',
                 website TEXT DEFAULT '',
                 website_status TEXT DEFAULT 'verified',
                 phone TEXT DEFAULT '',
                 whatsapp TEXT DEFAULT '',
                 email TEXT DEFAULT '',
+                decision_maker_email TEXT DEFAULT '',
+                decision_maker_phone TEXT DEFAULT '',
                 linkedin_url TEXT DEFAULT '',
+                decision_maker_linkedin TEXT DEFAULT '',
                 instagram_url TEXT DEFAULT '',
                 youtube_url TEXT DEFAULT '',
                 twitter_url TEXT DEFAULT '',
@@ -426,14 +436,28 @@ function migrate_database(PDO $pdo, string $driver): void {
         ");
     }
 
-    // Dynamic schema migrations & cleanups
-    try {
-        if ($driver === 'mysql') {
-            $pdo->exec("ALTER TABLE leads ADD COLUMN youtube_url VARCHAR(255) DEFAULT '' AFTER instagram_url");
-        } else {
-            $pdo->exec("ALTER TABLE leads ADD COLUMN youtube_url TEXT DEFAULT ''");
-        }
-    } catch (Throwable $e) {}
+    // Dynamic schema migrations & cleanups (individual try-catch per column to prevent batch aborts)
+    $migrationCols = ($driver === 'mysql') ? [
+        "ALTER TABLE leads ADD COLUMN youtube_url VARCHAR(255) DEFAULT '' AFTER instagram_url",
+        "ALTER TABLE leads ADD COLUMN decision_maker_name VARCHAR(150) DEFAULT '' AFTER business_name",
+        "ALTER TABLE leads ADD COLUMN decision_maker_title VARCHAR(100) DEFAULT 'Founder & Managing Director' AFTER decision_maker_name",
+        "ALTER TABLE leads ADD COLUMN decision_maker_linkedin VARCHAR(255) DEFAULT '' AFTER linkedin_url",
+        "ALTER TABLE leads ADD COLUMN decision_maker_email VARCHAR(191) DEFAULT '' AFTER email",
+        "ALTER TABLE leads ADD COLUMN decision_maker_phone VARCHAR(50) DEFAULT '' AFTER phone",
+    ] : [
+        "ALTER TABLE leads ADD COLUMN youtube_url TEXT DEFAULT ''",
+        "ALTER TABLE leads ADD COLUMN decision_maker_name TEXT DEFAULT ''",
+        "ALTER TABLE leads ADD COLUMN decision_maker_title TEXT DEFAULT 'Founder & Managing Director'",
+        "ALTER TABLE leads ADD COLUMN decision_maker_linkedin TEXT DEFAULT ''",
+        "ALTER TABLE leads ADD COLUMN decision_maker_email TEXT DEFAULT ''",
+        "ALTER TABLE leads ADD COLUMN decision_maker_phone TEXT DEFAULT ''",
+    ];
+
+    foreach ($migrationCols as $colSql) {
+        try {
+            $pdo->exec($colSql);
+        } catch (Throwable $e) {}
+    }
 
     // Purge previous synthetic test artifacts so only verified domains resolve
     try {

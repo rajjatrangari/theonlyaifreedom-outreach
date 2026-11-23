@@ -38,8 +38,8 @@ function render_layout(string $title, string $activePage, string $content, ?arra
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/assets/css/app.css?v=2">
-    <script src="/assets/js/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/app.css?v=4">
+    <script src="/assets/js/theme.js?v=4"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -219,7 +219,7 @@ function render_layout(string $title, string $activePage, string $content, ?arra
     <!-- Notification Toast -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <script src="/assets/js/app.js"></script>
+    <script src="/assets/js/app.js?v=4"></script>
     <script>
         lucide.createIcons();
         function toggleSidebar() {

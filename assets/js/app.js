@@ -90,117 +90,216 @@ async function openOutreachModal(leadId, defaultChannel = 'whatsapp') {
 function renderOutreachModalContent(lead, sequence, activeChannel) {
     const modalBox = document.getElementById('modalBox');
 
-    let currentText = '';
-    if (activeChannel === 'whatsapp') {
-        currentText = sequence.whatsapp.initial;
-    } else if (activeChannel === 'linkedin') {
-        currentText = sequence.linkedin.initial;
-    } else if (activeChannel === 'email') {
-        currentText = sequence.email.body;
-    } else if (activeChannel === 'instagram') {
-        currentText = sequence.instagram.initial;
-    }
+    const dmName = lead.decision_maker_name || sequence.decision_maker_name || 'Founder & Director';
+    const dmTitle = lead.decision_maker_title || sequence.decision_maker_title || 'Managing Director';
+    const dmPhone = lead.decision_maker_phone || lead.whatsapp || lead.phone;
+    const dmEmail = lead.decision_maker_email || lead.email;
+    const dmLinkedin = lead.decision_maker_linkedin || lead.linkedin_url;
+
+    // Default global outreach state
+    window.__currentOutreach = {
+        lead: lead,
+        sequence: sequence,
+        channel: activeChannel || 'whatsapp',
+        lang: 'en',
+        mode: 'cadence', // 'cadence' | 'playbook'
+        touchType: 'initial',
+        scenario: 'reply_interested'
+    };
+
+    const currentText = getMessageForState(window.__currentOutreach);
 
     modalBox.innerHTML = `
-        <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
+        <div class="p-5 border-b border-white/[0.08] flex items-center justify-between bg-slate-900/60">
             <div>
                 <div class="flex items-center gap-2">
                     <h3 class="font-bold text-white text-base">Direct AI Outreach Dispatcher</h3>
-                    <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
                         Q-Score: ${lead.qualification_score}/100
                     </span>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#d9b46c]/15 text-[#f3dca4] border border-[#d9b46c]/30 font-mono">
+                        Direct Decision Maker
+                    </span>
                 </div>
-                <div class="text-xs text-slate-400 mt-0.5">Prospect: <strong class="text-slate-200">${lead.business_name}</strong> • ${lead.city || 'India'}</div>
+                <div class="text-xs text-slate-300 mt-1 flex flex-wrap items-center gap-2">
+                    <span>Target: <strong class="text-white">${lead.business_name}</strong></span>
+                    <span class="text-slate-500">•</span>
+                    <span class="inline-flex items-center gap-1 text-[#d9b46c] font-semibold">
+                        <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                        <span>${dmName}</span>
+                        <span class="text-slate-400 font-normal">(${dmTitle})</span>
+                    </span>
+                </div>
             </div>
-            <button onclick="closeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800">
+            <button onclick="closeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </div>
 
-        <div class="p-5 overflow-y-auto max-h-[70vh] space-y-4 custom-scroll">
+        <div class="p-5 overflow-y-auto max-h-[72vh] space-y-4 custom-scroll">
             
+            <!-- Language Selector Bar (English, Hinglish, Hindi, Marathi) -->
+            <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-[#d9b46c] flex items-center gap-1.5">
+                        <i data-lucide="languages" class="w-3.5 h-3.5"></i>
+                        <span>Outreach Language</span>
+                    </label>
+                    <span class="text-[11px] text-slate-400">Direct human copywriting (zero AI robotic tone)</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <button type="button" onclick="switchOutreachLanguage('en')" id="lang-btn-en" class="lang-pill flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl border text-xs font-bold transition bg-[#d9b46c]/20 text-[#f3dca4] border-[#d9b46c]/50">
+                        <span>🇬🇧 English</span>
+                    </button>
+                    <button type="button" onclick="switchOutreachLanguage('hinglish')" id="lang-btn-hinglish" class="lang-pill flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl border text-xs font-semibold transition bg-slate-800/80 text-slate-300 border-white/[0.08] hover:text-white">
+                        <span>🇮🇳 Hinglish</span>
+                    </button>
+                    <button type="button" onclick="switchOutreachLanguage('hi')" id="lang-btn-hi" class="lang-pill flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl border text-xs font-semibold transition bg-slate-800/80 text-slate-300 border-white/[0.08] hover:text-white">
+                        <span>🇮🇳 हिंदी (Hindi)</span>
+                    </button>
+                    <button type="button" onclick="switchOutreachLanguage('mr')" id="lang-btn-mr" class="lang-pill flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl border text-xs font-semibold transition bg-slate-800/80 text-slate-300 border-white/[0.08] hover:text-white">
+                        <span>🚩 मराठी (Marathi)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mode Switcher: Outreach Cadence vs. Response Playbook -->
+            <div class="p-1 rounded-xl bg-slate-950/80 border border-white/[0.08] flex items-center gap-1">
+                <button type="button" onclick="switchOutreachMode('cadence')" id="mode-btn-cadence" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-[#d9b46c] text-black shadow-sm">
+                    <i data-lucide="send-horizontal" class="w-3.5 h-3.5"></i>
+                    <span>Cold Outreach Cadence</span>
+                </button>
+                <button type="button" onclick="switchOutreachMode('playbook')" id="mode-btn-playbook" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 text-slate-300 hover:text-white">
+                    <i data-lucide="message-square-reply" class="w-3.5 h-3.5 text-emerald-400"></i>
+                    <span>When Prospect Replies... (Playbook)</span>
+                </button>
+            </div>
+
+            <!-- Section 1: Outreach Touchpoints (Visible when mode === 'cadence') -->
+            <div id="cadenceControls" class="space-y-1.5">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Sequence Stage</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <button type="button" onclick="setTouchType('initial')" id="btn-touch-initial" class="touch-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold border bg-emerald-500/20 text-emerald-300 border-emerald-500/50">Initial Pitch</button>
+                    <button type="button" onclick="setTouchType('followup_1')" id="btn-touch-followup_1" class="touch-btn px-2.5 py-1.5 rounded-lg text-xs font-medium border bg-slate-800 text-slate-300 border-white/[0.08] hover:text-white">Day 2: Case Proof</button>
+                    <button type="button" onclick="setTouchType('followup_2')" id="btn-touch-followup_2" class="touch-btn px-2.5 py-1.5 rounded-lg text-xs font-medium border bg-slate-800 text-slate-300 border-white/[0.08] hover:text-white">Day 5: Quick Bump</button>
+                    <button type="button" onclick="setTouchType('followup_3')" id="btn-touch-followup_3" class="touch-btn px-2.5 py-1.5 rounded-lg text-xs font-medium border bg-slate-800 text-slate-300 border-white/[0.08] hover:text-white">Day 8: Closure</button>
+                </div>
+            </div>
+
+            <!-- Section 2: Response Playbook Scenarios (Visible when mode === 'playbook') -->
+            <div id="playbookControls" class="hidden space-y-1.5">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                    <span>Select Prospect Reply Scenario (Instant Human Objection Handler)</span>
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button type="button" onclick="setPlaybookScenario('reply_interested')" id="btn-scenario-reply_interested" class="scenario-btn text-left px-3 py-2 rounded-xl border text-xs font-medium transition bg-emerald-500/20 text-emerald-300 border-emerald-500/50 flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                        <span>"Yes, send info / details"</span>
+                    </button>
+                    <button type="button" onclick="setPlaybookScenario('reply_pricing')" id="btn-scenario-reply_pricing" class="scenario-btn text-left px-3 py-2 rounded-xl border text-xs font-medium transition bg-slate-800/80 text-slate-300 border-white/[0.08] hover:text-white flex items-center gap-2">
+                        <i data-lucide="indian-rupee" class="w-4 h-4 text-[#d9b46c] flex-shrink-0"></i>
+                        <span>"What's your pricing / cost?"</span>
+                    </button>
+                    <button type="button" onclick="setPlaybookScenario('reply_have_agency')" id="btn-scenario-reply_have_agency" class="scenario-btn text-left px-3 py-2 rounded-xl border text-xs font-medium transition bg-slate-800/80 text-slate-300 border-white/[0.08] hover:text-white flex items-center gap-2">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-blue-400 flex-shrink-0"></i>
+                        <span>"We already have an agency"</span>
+                    </button>
+                    <button type="button" onclick="setPlaybookScenario('reply_not_interested')" id="btn-scenario-reply_not_interested" class="scenario-btn text-left px-3 py-2 rounded-xl border text-xs font-medium transition bg-slate-800/80 text-slate-300 border-white/[0.08] hover:text-white flex items-center gap-2">
+                        <i data-lucide="x-circle" class="w-4 h-4 text-rose-400 flex-shrink-0"></i>
+                        <span>"Not interested right now"</span>
+                    </button>
+                    <button type="button" onclick="setPlaybookScenario('reply_who_is_this')" id="btn-scenario-reply_who_is_this" class="scenario-btn text-left px-3 py-2 rounded-xl border text-xs font-medium transition bg-slate-800/80 text-slate-300 border-white/[0.08] hover:text-white flex items-center gap-2">
+                        <i data-lucide="help-circle" class="w-4 h-4 text-amber-400 flex-shrink-0"></i>
+                        <span>"Who is this / where got my contact?"</span>
+                    </button>
+                    <button type="button" onclick="setPlaybookScenario('reply_book_call')" id="btn-scenario-reply_book_call" class="scenario-btn text-left px-3 py-2 rounded-xl border text-xs font-medium transition bg-slate-800/80 text-slate-300 border-white/[0.08] hover:text-white flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-4 h-4 text-indigo-400 flex-shrink-0"></i>
+                        <span>"Send booking link / schedule call"</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Channel Switcher -->
             <div>
-                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Select Channel</label>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Select Channel</label>
                 <div class="grid grid-cols-4 gap-2">
-                    <button type="button" onclick="switchOutreachChannel('whatsapp')" id="tab-whatsapp" class="channel-tab flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-semibold transition ${activeChannel === 'whatsapp' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50' : 'bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-white'}">
+                    <button type="button" onclick="switchOutreachChannel('whatsapp')" id="tab-whatsapp" class="channel-tab flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-semibold transition ${activeChannel === 'whatsapp' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50' : 'bg-slate-800/60 text-slate-300 border-slate-700/60 hover:text-white'}">
                         <i data-lucide="message-circle" class="w-4 h-4 text-emerald-400"></i>
                         <span>WhatsApp</span>
                     </button>
-                    <button type="button" onclick="switchOutreachChannel('linkedin')" id="tab-linkedin" class="channel-tab flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-semibold transition ${activeChannel === 'linkedin' ? 'bg-blue-500/20 text-blue-300 border-blue-500/50' : 'bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-white'}">
+                    <button type="button" onclick="switchOutreachChannel('linkedin')" id="tab-linkedin" class="channel-tab flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-semibold transition ${activeChannel === 'linkedin' ? 'bg-blue-500/20 text-blue-300 border-blue-500/50' : 'bg-slate-800/60 text-slate-300 border-slate-700/60 hover:text-white'}">
                         <i data-lucide="linkedin" class="w-4 h-4 text-blue-400"></i>
                         <span>LinkedIn</span>
                     </button>
-                    <button type="button" onclick="switchOutreachChannel('email')" id="tab-email" class="channel-tab flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-semibold transition ${activeChannel === 'email' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/50' : 'bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-white'}">
+                    <button type="button" onclick="switchOutreachChannel('email')" id="tab-email" class="channel-tab flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-semibold transition ${activeChannel === 'email' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/50' : 'bg-slate-800/60 text-slate-300 border-slate-700/60 hover:text-white'}">
                         <i data-lucide="mail" class="w-4 h-4 text-indigo-400"></i>
                         <span>Email</span>
                     </button>
-                    <button type="button" onclick="switchOutreachChannel('instagram')" id="tab-instagram" class="channel-tab flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-semibold transition ${activeChannel === 'instagram' ? 'bg-pink-500/20 text-pink-300 border-pink-500/50' : 'bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-white'}">
+                    <button type="button" onclick="switchOutreachChannel('instagram')" id="tab-instagram" class="channel-tab flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-semibold transition ${activeChannel === 'instagram' ? 'bg-pink-500/20 text-pink-300 border-pink-500/50' : 'bg-slate-800/60 text-slate-300 border-slate-700/60 hover:text-white'}">
                         <i data-lucide="instagram" class="w-4 h-4 text-pink-400"></i>
                         <span>Instagram</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Follow-up Stage Selector for this lead -->
-            <div>
-                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Outreach Touchpoint</label>
-                <div class="flex gap-2">
-                    <button type="button" onclick="setTouchType('initial')" id="btn-touch-initial" class="touch-btn px-3 py-1.5 rounded-lg text-xs font-medium border bg-emerald-500/20 text-emerald-300 border-emerald-500/40">Initial Pitch</button>
-                    <button type="button" onclick="setTouchType('followup_1')" id="btn-touch-followup_1" class="touch-btn px-3 py-1.5 rounded-lg text-xs font-medium border bg-slate-800 text-slate-400 border-slate-700 hover:text-white">Follow-up 1 (Day 2)</button>
-                    <button type="button" onclick="setTouchType('followup_2')" id="btn-touch-followup_2" class="touch-btn px-3 py-1.5 rounded-lg text-xs font-medium border bg-slate-800 text-slate-400 border-slate-700 hover:text-white">Follow-up 2 (Day 5)</button>
-                    <button type="button" onclick="setTouchType('followup_3')" id="btn-touch-followup_3" class="touch-btn px-3 py-1.5 rounded-lg text-xs font-medium border bg-slate-800 text-slate-400 border-slate-700 hover:text-white">Breakup / Closure</button>
-                </div>
-            </div>
-
             <!-- Email Subject Field (Visible only on Email) -->
             <div id="emailSubjectContainer" class="${activeChannel === 'email' ? 'block' : 'hidden'}">
                 <label class="block text-xs font-semibold text-slate-400 mb-1">Subject Line</label>
-                <input type="text" id="emailSubjectInput" value="${sequence.email.subject}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+                <input type="text" id="emailSubjectInput" value="${sequence.email?.subject || 'Quick question'}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
             </div>
 
-            <!-- Personalized AI Message Area -->
+            <!-- Personalized Direct AI Message Area -->
             <div>
                 <div class="flex items-center justify-between mb-1.5">
-                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Personalized Message</label>
-                    <button type="button" onclick="copyMessageText()" class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                        <i data-lucide="pen-tool" class="w-3.5 h-3.5 text-[#d9b46c]"></i>
+                        <span>Message Script</span>
+                    </label>
+                    <button type="button" onclick="copyMessageText()" class="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1 transition">
                         <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                        <span>Copy Pitch</span>
+                        <span>Copy Script</span>
                     </button>
                 </div>
-                <textarea id="outreachMessageText" rows="7" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3.5 text-sm text-slate-200 leading-relaxed font-sans focus:outline-none focus:border-emerald-500 custom-scroll">${currentText}</textarea>
+                <textarea id="outreachMessageText" rows="7" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3.5 text-sm text-slate-100 leading-relaxed font-sans focus:outline-none focus:border-emerald-500 custom-scroll">${currentText}</textarea>
             </div>
 
-            <!-- Lead Active Channels & Contact Details Info -->
-            <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 flex flex-wrap gap-4 items-center">
-                <span class="flex items-center gap-1.5">
-                    <i data-lucide="phone" class="w-3.5 h-3.5 text-emerald-400"></i>
-                    <strong>Phone/WA:</strong> ${lead.whatsapp || lead.phone || 'N/A'}
-                </span>
-                ${lead.email ? `
+            <!-- Lead Active Channels & Direct Decision Maker Contacts -->
+            <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 space-y-2">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-[#d9b46c] flex items-center gap-1.5">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                    <span>Direct Decision Maker Contact Channels</span>
+                </div>
+                <div class="flex flex-wrap gap-4 items-center">
                     <span class="flex items-center gap-1.5">
-                        <i data-lucide="mail" class="w-3.5 h-3.5 text-indigo-400"></i>
-                        <strong>Email:</strong> ${lead.email}
+                        <i data-lucide="phone" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        <strong>Direct WA / Phone:</strong> <span class="font-mono text-white">${dmPhone || 'Verified Active'}</span>
                     </span>
-                ` : ''}
-                ${lead.website ? `
-                    <a href="${lead.website}" target="_blank" class="text-blue-400 hover:underline flex items-center gap-1">
-                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                        <span>Visit Website</span>
-                    </a>
-                ` : ''}
-                ${lead.linkedin_url ? `
-                    <a href="${lead.linkedin_url}" target="_blank" class="text-blue-400 hover:underline flex items-center gap-1">
-                        <i data-lucide="linkedin" class="w-3.5 h-3.5"></i>
-                        <span>LinkedIn</span>
-                    </a>
-                ` : ''}
+                    ${dmEmail ? `
+                        <span class="flex items-center gap-1.5">
+                            <i data-lucide="mail" class="w-3.5 h-3.5 text-indigo-400"></i>
+                            <strong>Email:</strong> <span class="text-white">${dmEmail}</span>
+                        </span>
+                    ` : ''}
+                    ${dmLinkedin ? `
+                        <a href="${dmLinkedin}" target="_blank" class="text-blue-400 hover:underline flex items-center gap-1 font-semibold">
+                            <i data-lucide="linkedin" class="w-3.5 h-3.5"></i>
+                            <span>${dmName}'s LinkedIn</span>
+                        </a>
+                    ` : ''}
+                    ${lead.website ? `
+                        <a href="${lead.website}" target="_blank" class="text-[#d9b46c] hover:underline flex items-center gap-1">
+                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                            <span>Official Website</span>
+                        </a>
+                    ` : ''}
+                </div>
             </div>
         </div>
 
-        <div class="p-5 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between">
+        <div class="p-5 border-t border-white/[0.08] bg-slate-900/60 flex items-center justify-between">
             <div class="text-xs text-slate-400">
-                Clicking dispatch opens channel & moves lead to <strong>Outreach Sent</strong>.
+                Clicking dispatch copies script, opens channel & logs to <strong>CRM Pipeline</strong>.
             </div>
             <div class="flex items-center gap-2">
                 <button type="button" onclick="closeModal()" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition">
@@ -214,15 +313,96 @@ function renderOutreachModalContent(lead, sequence, activeChannel) {
         </div>
     `;
 
-    // Store global state for channel switching
-    window.__currentOutreach = {
-        lead: lead,
-        sequence: sequence,
-        channel: activeChannel,
-        touchType: 'initial'
-    };
-
     lucide.createIcons();
+}
+
+function getMessageForState(state) {
+    if (!state || !state.sequence) return '';
+
+    const lang = state.lang || 'en';
+    const channel = state.channel || 'whatsapp';
+    const mode = state.mode || 'cadence';
+    const touch = state.touchType || 'initial';
+    const scenario = state.scenario || 'reply_interested';
+
+    const langPack = (state.sequence.all_languages && state.sequence.all_languages[lang])
+        ? state.sequence.all_languages[lang]
+        : state.sequence;
+
+    if (mode === 'playbook') {
+        const playbook = langPack.playbook || {};
+        return playbook[scenario] || playbook['reply_interested'] || 'Thank you for your response. Let us connect briefly.';
+    }
+
+    // Cold cadence
+    if (channel === 'whatsapp') {
+        return (langPack.whatsapp && (langPack.whatsapp[touch] || langPack.whatsapp.initial)) || '';
+    } else if (channel === 'linkedin') {
+        return (langPack.linkedin && (touch === 'initial' ? langPack.linkedin.initial : (langPack.linkedin.followup_1 || langPack.linkedin.initial))) || '';
+    } else if (channel === 'email') {
+        return (langPack.email && (touch === 'initial' ? langPack.email.body : (langPack.email.followup_1_body || langPack.email.body))) || '';
+    } else if (channel === 'instagram') {
+        return (langPack.instagram && langPack.instagram.initial) || '';
+    }
+    return '';
+}
+
+function switchOutreachLanguage(lang) {
+    if (!window.__currentOutreach) return;
+    window.__currentOutreach.lang = lang;
+
+    // Update Language pill styles
+    ['en', 'hinglish', 'hi', 'mr'].forEach(l => {
+        const btn = document.getElementById(`lang-btn-${l}`);
+        if (!btn) return;
+        if (l === lang) {
+            btn.className = 'lang-pill flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl border text-xs font-bold transition bg-[#d9b46c]/25 text-[#f3dca4] border-[#d9b46c]/50 shadow-sm';
+        } else {
+            btn.className = 'lang-pill flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl border text-xs font-semibold transition bg-slate-800/80 text-slate-300 border-white/[0.08] hover:text-white';
+        }
+    });
+
+    updateOutreachTextArea();
+}
+
+function switchOutreachMode(mode) {
+    if (!window.__currentOutreach) return;
+    window.__currentOutreach.mode = mode;
+
+    const cadenceBtn = document.getElementById('mode-btn-cadence');
+    const playbookBtn = document.getElementById('mode-btn-playbook');
+    const cadenceControls = document.getElementById('cadenceControls');
+    const playbookControls = document.getElementById('playbookControls');
+
+    if (mode === 'cadence') {
+        cadenceBtn.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-[#d9b46c] text-black shadow-sm';
+        playbookBtn.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 text-slate-300 hover:text-white';
+        if (cadenceControls) cadenceControls.classList.remove('hidden');
+        if (playbookControls) playbookControls.classList.add('hidden');
+    } else {
+        playbookBtn.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-500 text-black shadow-sm';
+        cadenceBtn.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 text-slate-300 hover:text-white';
+        if (cadenceControls) cadenceControls.classList.add('hidden');
+        if (playbookControls) playbookControls.classList.remove('hidden');
+    }
+
+    updateOutreachTextArea();
+}
+
+function setPlaybookScenario(scenario) {
+    if (!window.__currentOutreach) return;
+    window.__currentOutreach.scenario = scenario;
+
+    document.querySelectorAll('.scenario-btn').forEach(btn => {
+        btn.className = 'scenario-btn text-left px-3 py-2 rounded-xl border text-xs font-medium transition bg-slate-800/80 text-slate-300 border-white/[0.08] hover:text-white flex items-center gap-2';
+    });
+
+    const activeBtn = document.getElementById(`btn-scenario-${scenario}`);
+    if (activeBtn) {
+        activeBtn.className = 'scenario-btn text-left px-3 py-2 rounded-xl border text-xs font-bold transition bg-emerald-500/20 text-emerald-300 border-emerald-500/50 flex items-center gap-2 shadow-sm';
+    }
+
+    updateOutreachTextArea();
 }
 
 function switchOutreachChannel(channel) {
@@ -278,31 +458,35 @@ function updateOutreachTextArea() {
     const state = window.__currentOutreach;
     if (!state) return;
 
-    const channel = state.channel;
-    const touch = state.touchType;
-    const seq = state.sequence;
     const textarea = document.getElementById('outreachMessageText');
     if (!textarea) return;
 
-    let text = '';
-    if (channel === 'whatsapp') {
-        text = seq.whatsapp[touch] || seq.whatsapp.initial;
-    } else if (channel === 'linkedin') {
-        text = touch === 'initial' ? seq.linkedin.initial : seq.linkedin.followup_1;
-    } else if (channel === 'email') {
-        text = touch === 'initial' ? seq.email.body : seq.email.followup_1_body;
-    } else if (channel === 'instagram') {
-        text = seq.instagram.initial;
-    }
+    textarea.value = getMessageForState(state);
 
-    textarea.value = text;
+    // Also update email subject if in email channel
+    if (state.channel === 'email') {
+        const emailSub = document.getElementById('emailSubjectInput');
+        if (emailSub && state.sequence) {
+            const lang = state.lang || 'en';
+            const langPack = (state.sequence.all_languages && state.sequence.all_languages[lang])
+                ? state.sequence.all_languages[lang]
+                : state.sequence;
+            if (state.mode === 'cadence') {
+                emailSub.value = state.touchType === 'initial' 
+                    ? (langPack.email?.subject || 'Quick question')
+                    : (langPack.email?.followup_1_subject || 'Re: Quick question');
+            } else {
+                emailSub.value = `Re: Partnership conversation with ${state.lead.business_name}`;
+            }
+        }
+    }
 }
 
 function copyMessageText() {
     const textarea = document.getElementById('outreachMessageText');
     if (!textarea) return;
     navigator.clipboard.writeText(textarea.value).then(() => {
-        showToast('Message pitch copied to clipboard! 📋', 'success');
+        showToast('Message script copied to clipboard! 📋', 'success');
     });
 }
 
@@ -315,44 +499,47 @@ async function dispatchOutreach(leadId) {
     const message = textarea ? textarea.value : '';
     const lead = state.lead;
     const channel = state.channel;
-    const touchType = state.touchType;
+    const mode = state.mode || 'cadence';
+    const touchType = mode === 'playbook' ? `playbook_${state.scenario}` : state.touchType;
+    const targetStage = mode === 'playbook' ? 'responded' : 'outreach_sent';
 
     // Automatically copy message to clipboard so user has it ready
     if (message) {
         navigator.clipboard.writeText(message).catch(() => {});
     }
 
-    // 1. Open target channel
+    // 1. Open target channel directly to the Decision Maker
     if (channel === 'whatsapp') {
-        const rawPhone = lead.whatsapp || lead.phone;
+        const rawPhone = lead.decision_maker_phone || lead.whatsapp || lead.phone;
         const clean = (rawPhone || '').replace(/[^\d]/g, '');
         if (clean) {
             window.open(`https://wa.me/${clean}?text=${encodeURIComponent(message)}`, '_blank');
         } else {
-            showToast('No valid WhatsApp number found for this lead.', 'error');
+            showToast('No valid WhatsApp number found for this prospect.', 'error');
             return;
         }
     } else if (channel === 'linkedin') {
-        if (lead.linkedin_url) {
-            window.open(lead.linkedin_url, '_blank');
-            showToast('LinkedIn profile opened! Pitch copied to clipboard.', 'success');
+        const liUrl = lead.decision_maker_linkedin || lead.linkedin_url;
+        if (liUrl) {
+            window.open(liUrl, '_blank');
+            showToast('LinkedIn decision maker profile opened! Script copied to clipboard.', 'success');
         } else {
-            showToast('No LinkedIn URL for this lead.', 'error');
+            showToast('No LinkedIn profile found for this prospect.', 'error');
             return;
         }
     } else if (channel === 'email') {
-        const email = lead.email;
-        const subject = document.getElementById('emailSubjectInput')?.value || `Opportunity for ${lead.business_name}`;
+        const email = lead.decision_maker_email || lead.email;
+        const subject = document.getElementById('emailSubjectInput')?.value || `Direct note for ${lead.decision_maker_name || lead.business_name}`;
         if (email) {
             window.open(`mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`, '_blank');
         } else {
-            showToast('No valid email address for this lead.', 'error');
+            showToast('No verified corporate email found for this prospect.', 'error');
             return;
         }
     } else if (channel === 'instagram') {
         if (lead.instagram_url) {
             window.open(lead.instagram_url, '_blank');
-            showToast('Instagram profile opened! Pitch copied to clipboard.', 'success');
+            showToast('Instagram profile opened! Script copied to clipboard.', 'success');
         } else {
             showToast('No Instagram URL for this lead.', 'error');
             return;

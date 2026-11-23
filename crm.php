@@ -148,6 +148,11 @@ ob_start();
                                 $leadJson = htmlspecialchars(json_encode([
                                     'id' => $lead['id'],
                                     'name' => $lead['business_name'],
+                                    'decision_maker_name' => $lead['decision_maker_name'] ?? '',
+                                    'decision_maker_title' => $lead['decision_maker_title'] ?? 'Founder & Managing Director',
+                                    'decision_maker_phone' => $lead['decision_maker_phone'] ?? '',
+                                    'decision_maker_email' => $lead['decision_maker_email'] ?? '',
+                                    'decision_maker_linkedin' => $lead['decision_maker_linkedin'] ?? '',
                                     'score' => $score,
                                     'tier' => $lead['paying_capacity_tier'],
                                     'website' => $lead['website'],
@@ -180,6 +185,13 @@ ob_start();
                                     <div class="text-[11px] text-[#a3a6b0] truncate">
                                         <?= h($lead['category']) ?> • <?= h($lead['city'] ?: 'India') ?>
                                     </div>
+
+                                    <?php if (!empty($lead['decision_maker_name'])): ?>
+                                        <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#d9b46c]/10 text-[#d9b46c] text-[10px] font-semibold border border-[#d9b46c]/20 max-w-full truncate" title="Direct Decision Maker: <?= h($lead['decision_maker_name']) ?>">
+                                            <i data-lucide="user-check" class="w-3 h-3 flex-shrink-0 text-[#d9b46c]"></i>
+                                            <span class="truncate font-bold"><?= h($lead['decision_maker_name']) ?></span>
+                                        </div>
+                                    <?php endif; ?>
 
                                     <!-- Value & Follow-up Badges -->
                                     <div class="flex items-center justify-between text-[11px] pt-1">
@@ -294,6 +306,11 @@ ob_start();
                             $leadJson = htmlspecialchars(json_encode([
                                 'id' => $lead['id'],
                                 'name' => $lead['business_name'],
+                                'decision_maker_name' => $lead['decision_maker_name'] ?? '',
+                                'decision_maker_title' => $lead['decision_maker_title'] ?? 'Founder & Managing Director',
+                                'decision_maker_phone' => $lead['decision_maker_phone'] ?? '',
+                                'decision_maker_email' => $lead['decision_maker_email'] ?? '',
+                                'decision_maker_linkedin' => $lead['decision_maker_linkedin'] ?? '',
                                 'score' => $score,
                                 'tier' => $lead['paying_capacity_tier'],
                                 'website' => $lead['website'],
@@ -315,6 +332,13 @@ ob_start();
                                 <td class="py-3 px-4">
                                     <div class="font-bold text-[#f4f1ea]"><?= h($lead['business_name']) ?></div>
                                     <div class="text-[11px] text-[#a3a6b0]"><?= h($lead['category']) ?> • <?= h($lead['city']) ?></div>
+                                    <?php if (!empty($lead['decision_maker_name'])): ?>
+                                        <div class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded bg-[#d9b46c]/10 text-[#d9b46c] text-[10px] font-semibold border border-[#d9b46c]/20 max-w-[200px] truncate" title="Decision Maker: <?= h($lead['decision_maker_name']) ?>">
+                                            <i data-lucide="user-check" class="w-3 h-3 flex-shrink-0 text-[#d9b46c]"></i>
+                                            <span class="truncate font-bold"><?= h($lead['decision_maker_name']) ?></span>
+                                            <span class="opacity-75 truncate">• <?= h($lead['decision_maker_title'] ?: 'Founder / MD') ?></span>
+                                        </div>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="py-3 px-4">
                                     <select onchange="updateLeadStage(<?= (int)$lead['id'] ?>, this.value)" class="bg-[#11141c] border border-white/[0.08] rounded-lg px-2 py-1 text-xs text-[#f4f1ea] focus:outline-none focus:border-[#d9b46c]">

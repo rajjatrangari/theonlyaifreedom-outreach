@@ -1,6 +1,6 @@
 /* ==========================================================
    Outreach AI Freedom — The Only AI Freedom Theme
-   Auto / Dark (Obsidian #07080c) / Light (Champagne Cream #f7f3ec)
+   Auto / Dark (Obsidian #07080c) / Light (Champagne Cream #f8f5ee)
    ========================================================== */
 
 :root {
@@ -20,17 +20,17 @@
 
 html[data-mode="light"] {
     color-scheme: light;
-    --bg: #f7f3ec;
+    --bg: #f8f5ee;
     --bg-surface: #ffffff;
-    --bg-surface-2: #faf7f1;
-    --border-line: rgba(40, 30, 10, 0.12);
-    --border-line-strong: rgba(40, 30, 10, 0.22);
-    --text-primary: #19150e;
-    --text-muted: #57524a;
-    --text-dim: #7a7468;
-    --gold: #8f6a28;
-    --gold-light: #7a5a1f;
-    --gold-deep: #6b4e18;
+    --bg-surface-2: #f2ece0;
+    --border-line: rgba(20, 16, 10, 0.14);
+    --border-line-strong: rgba(20, 16, 10, 0.24);
+    --text-primary: #0f1117;
+    --text-muted: #3d4352;
+    --text-dim: #646a78;
+    --gold: #8f651a;
+    --gold-light: #7a5414;
+    --gold-deep: #5e3e0a;
 }
 
 html, body {
@@ -51,7 +51,7 @@ html, body {
         border-radius: 9999px;
     }
     html[data-mode="light"] .custom-scroll::-webkit-scrollbar-thumb {
-        background: rgba(40, 30, 10, 0.18);
+        background: rgba(20, 16, 10, 0.18);
     }
     .custom-scroll::-webkit-scrollbar-thumb:hover {
         background: rgba(217, 180, 108, 0.5);
@@ -94,12 +94,12 @@ html, body {
 }
 
 html[data-mode="light"] .ambient::before {
-    opacity: 0.15;
-    background: #e2c58a;
+    opacity: 0.08;
+    background: #d4af37;
 }
 html[data-mode="light"] .ambient::after {
-    opacity: 0.10;
-    background: #9fd6c2;
+    opacity: 0.06;
+    background: #10b981;
 }
 
 .grain {
@@ -128,9 +128,10 @@ html[data-mode="light"] .ambient::after {
 }
 
 html[data-mode="light"] .btn-gold-cta {
-    background: linear-gradient(135deg, #e5c05d 0%, #d4af37 45%, #b38a22 100%);
-    color: #111 !important;
-    box-shadow: 0 4px 18px rgba(180, 140, 40, 0.25);
+    background: linear-gradient(135deg, #d9b46c 0%, #c49942 50%, #9e7526 100%) !important;
+    color: #0f1117 !important;
+    box-shadow: 0 4px 18px rgba(180, 140, 40, 0.25) !important;
+    border: 1px solid rgba(20, 16, 10, 0.15) !important;
 }
 
 /* Glass Panels & Cards */
@@ -155,59 +156,100 @@ html[data-mode="light"] .btn-gold-cta {
     box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.8), 0 0 25px -5px rgba(217, 180, 108, 0.15);
 }
 
-/* Light Mode Overrides for Panels & Cards */
-html[data-mode="light"] .glass-panel {
-    background: rgba(255, 255, 255, 0.88);
-    border-color: rgba(40, 30, 10, 0.12);
-    box-shadow: 0 10px 30px -10px rgba(60, 45, 15, 0.08);
-}
-
-html[data-mode="light"] .glass-card {
-    background: #ffffff;
-    border-color: rgba(40, 30, 10, 0.12);
-    box-shadow: 0 4px 20px rgba(60, 45, 15, 0.06);
-}
-
-html[data-mode="light"] .glass-card:hover {
-    border-color: rgba(143, 106, 40, 0.4);
-    box-shadow: 0 14px 34px -8px rgba(60, 45, 15, 0.15);
-}
-
+/* ==========================================================
+   LIGHT MODE ULTRA HIGH-CONTRAST READABILITY ENGINE
+   Fixes washed-out / pale / invisible text in light mode
+   ========================================================== */
 html[data-mode="light"] body {
-    background: #f7f3ec;
-    color: #19150e;
+    background: #f8f5ee !important;
+    color: #0f1117 !important;
 }
 
 html[data-mode="light"] aside#sidebar {
-    background: #f0ebe1;
-    border-right-color: rgba(40, 30, 10, 0.12);
+    background: #f3efe4 !important;
+    border-right-color: rgba(20, 16, 10, 0.14) !important;
 }
 
 html[data-mode="light"] header {
-    background: rgba(247, 243, 236, 0.88);
-    border-bottom-color: rgba(40, 30, 10, 0.12);
+    background: rgba(248, 245, 238, 0.96) !important;
+    border-bottom-color: rgba(20, 16, 10, 0.14) !important;
 }
 
-html[data-mode="light"] .text-white {
-    color: #19150e !important;
+/* Force dark, crisp obsidian for headings & primary text */
+html[data-mode="light"] h1,
+html[data-mode="light"] h2,
+html[data-mode="light"] h3,
+html[data-mode="light"] h4,
+html[data-mode="light"] h5,
+html[data-mode="light"] h6 {
+    color: #0f1117 !important;
+}
+
+html[data-mode="light"] .text-white,
+html[data-mode="light"] .text-\[\#f4f1ea\],
+html[data-mode="light"] [class*="text-[#f4f1ea]"] {
+    color: #0f1117 !important;
 }
 
 html[data-mode="light"] .text-slate-100,
 html[data-mode="light"] .text-slate-200 {
-    color: #2b2519 !important;
+    color: #171b26 !important;
 }
 
+/* Subdued and secondary text in light mode */
 html[data-mode="light"] .text-slate-300,
-html[data-mode="light"] .text-slate-400 {
-    color: #57524a !important;
+html[data-mode="light"] .text-slate-400,
+html[data-mode="light"] .text-\[\#a3a6b0\],
+html[data-mode="light"] [class*="text-[#a3a6b0]"] {
+    color: #3d4352 !important;
 }
 
+html[data-mode="light"] .text-slate-500,
+html[data-mode="light"] .text-\[\#6e7280\],
+html[data-mode="light"] [class*="text-[#6e7280]"] {
+    color: #555b6a !important;
+}
+
+/* Gold text in light mode */
+html[data-mode="light"] .text-\[\#f3dca4\],
+html[data-mode="light"] [class*="text-[#f3dca4]"] {
+    color: #7a5414 !important;
+}
+
+html[data-mode="light"] .text-\[\#d9b46c\],
+html[data-mode="light"] [class*="text-[#d9b46c]"] {
+    color: #8f651a !important;
+}
+
+html[data-mode="light"] .gold-text {
+    background: linear-gradient(135deg, #7a5414 0%, #a67c29 45%, #5e3e0a 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+}
+
+/* Glass Panels & Cards in Light Mode */
+html[data-mode="light"] .glass-panel {
+    background: #ffffff !important;
+    border-color: rgba(20, 16, 10, 0.12) !important;
+    box-shadow: 0 4px 24px -2px rgba(25, 20, 10, 0.06), 0 1px 4px rgba(25, 20, 10, 0.04) !important;
+}
+
+html[data-mode="light"] .glass-card {
+    background: #ffffff !important;
+    border-color: rgba(20, 16, 10, 0.12) !important;
+    box-shadow: 0 2px 14px rgba(25, 20, 10, 0.05) !important;
+}
+
+html[data-mode="light"] .glass-card:hover {
+    border-color: #8f651a !important;
+    box-shadow: 0 8px 28px rgba(25, 20, 10, 0.10) !important;
+}
+
+/* Background surfaces in Light Mode */
 html[data-mode="light"] .bg-slate-800,
 html[data-mode="light"] .bg-slate-800\/60,
-html[data-mode="light"] .bg-slate-800\/80 {
-    background-color: #f0ebe0 !important;
-}
-
+html[data-mode="light"] .bg-slate-800\/80,
 html[data-mode="light"] .bg-slate-900,
 html[data-mode="light"] .bg-slate-900\/60,
 html[data-mode="light"] .bg-slate-900\/70,
@@ -222,7 +264,15 @@ html[data-mode="light"] .bg-\[\#11141c\],
 html[data-mode="light"] .bg-\[\#161a24\],
 html[data-mode="light"] .bg-\[\#07080c\]\/60,
 html[data-mode="light"] .bg-\[\#07080c\]\/80 {
-    background-color: #faf6ef !important;
+    background-color: #f7f3ec !important;
+}
+
+html[data-mode="light"] [class*="bg-white/"] {
+    background-color: #f0ebe0 !important;
+}
+
+html[data-mode="light"] [class*="border-white/"] {
+    border-color: rgba(20, 16, 10, 0.12) !important;
 }
 
 html[data-mode="light"] .border-slate-800,
@@ -231,53 +281,129 @@ html[data-mode="light"] .border-slate-800\/80,
 html[data-mode="light"] .border-slate-700,
 html[data-mode="light"] .border-slate-700\/50,
 html[data-mode="light"] .border-slate-700\/60,
-html[data-mode="light"] .border-slate-700\/80,
-html[data-mode="light"] .border-white\/\[0\.08\],
-html[data-mode="light"] .border-white\/\[0\.12\] {
-    border-color: rgba(40, 30, 10, 0.12) !important;
+html[data-mode="light"] .border-slate-700\/80 {
+    border-color: rgba(20, 16, 10, 0.12) !important;
 }
 
 html[data-mode="light"] .divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]),
 html[data-mode="light"] .divide-slate-800 > :not([hidden]) ~ :not([hidden]) {
-    border-color: rgba(40, 30, 10, 0.10) !important;
+    border-color: rgba(20, 16, 10, 0.10) !important;
 }
 
-html[data-mode="light"] .bg-white\/\[0\.04\],
-html[data-mode="light"] .bg-white\/\[0\.06\] {
-    background-color: rgba(40, 30, 10, 0.05) !important;
-}
-
-html[data-mode="light"] #modalBox {
-    background-color: #ffffff !important;
-    border-color: rgba(40, 30, 10, 0.16) !important;
-    box-shadow: 0 25px 50px -12px rgba(40, 30, 10, 0.25) !important;
-}
-
-html[data-mode="light"] tr:hover {
-    background-color: rgba(217, 180, 108, 0.08) !important;
-}
-
+/* Inputs, Selects & Textareas in Light Mode */
 html[data-mode="light"] input,
 html[data-mode="light"] select,
 html[data-mode="light"] textarea {
     background-color: #ffffff !important;
-    color: #19150e !important;
-    border-color: rgba(40, 30, 10, 0.18) !important;
+    color: #0f1117 !important;
+    border: 1px solid rgba(20, 16, 10, 0.22) !important;
 }
 
-/* Gold text gradient */
-.gold-text {
-    background: linear-gradient(135deg, #f3dca4 0%, #d9b46c 45%, #a9823c 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+html[data-mode="light"] input::placeholder,
+html[data-mode="light"] textarea::placeholder {
+    color: #7b8191 !important;
 }
 
-html[data-mode="light"] .gold-text {
-    background: linear-gradient(110deg, #7a5a1f 0%, #a8803a 40%, #8a6426 70%, #6b4e18 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+html[data-mode="light"] input:focus,
+html[data-mode="light"] select:focus,
+html[data-mode="light"] textarea:focus {
+    border-color: #8f651a !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(143, 101, 26, 0.15) !important;
+}
+
+/* Table styling in Light Mode */
+html[data-mode="light"] table thead tr {
+    background-color: #ede7da !important;
+    border-bottom: 2px solid rgba(20, 16, 10, 0.14) !important;
+}
+
+html[data-mode="light"] table thead th {
+    color: #242938 !important;
+    font-weight: 800 !important;
+}
+
+html[data-mode="light"] table tbody tr {
+    border-bottom: 1px solid rgba(20, 16, 10, 0.08) !important;
+}
+
+html[data-mode="light"] table tbody tr:hover {
+    background-color: rgba(217, 180, 108, 0.14) !important;
+}
+
+/* Modal in Light Mode */
+html[data-mode="light"] #modalBox {
+    background-color: #ffffff !important;
+    color: #0f1117 !important;
+    border: 1px solid rgba(20, 16, 10, 0.18) !important;
+    box-shadow: 0 30px 70px -15px rgba(20, 16, 10, 0.35) !important;
+}
+
+html[data-mode="light"] #modalBox .bg-slate-900\/60,
+html[data-mode="light"] #modalBox [class*="bg-slate-900"] {
+    background-color: #f3efe6 !important;
+    border-color: rgba(20, 16, 10, 0.12) !important;
+}
+
+html[data-mode="light"] #modalBox .bg-slate-950,
+html[data-mode="light"] #modalBox [class*="bg-slate-950"] {
+    background-color: #ffffff !important;
+    border-color: rgba(20, 16, 10, 0.16) !important;
+    color: #0f1117 !important;
+}
+
+html[data-mode="light"] #modalBox .touch-btn,
+html[data-mode="light"] #modalBox .scenario-btn,
+html[data-mode="light"] #modalBox .lang-pill,
+html[data-mode="light"] #modalBox .channel-tab {
+    background-color: #f9f6f0 !important;
+    border-color: rgba(20, 16, 10, 0.14) !important;
+    color: #242938 !important;
+}
+
+html[data-mode="light"] #modalBox .lang-pill.bg-\[\#d9b46c\]\/20,
+html[data-mode="light"] #modalBox .lang-pill.bg-\[\#d9b46c\]\/25 {
+    background-color: rgba(143, 101, 26, 0.15) !important;
+    border-color: rgba(143, 101, 26, 0.45) !important;
+    color: #7a5414 !important;
+}
+
+html[data-mode="light"] #modalBox .scenario-btn.bg-emerald-500\/20 {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+    border-color: rgba(16, 185, 129, 0.45) !important;
+    color: #065f46 !important;
+}
+
+html[data-mode="light"] #modalBox .touch-btn.bg-emerald-500\/20 {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+    border-color: rgba(16, 185, 129, 0.45) !important;
+    color: #065f46 !important;
+}
+
+/* Blueprint & Methodology in Light Mode */
+html[data-mode="light"] #btnToggleBlueprint {
+    background-color: #ede7da !important;
+    border-color: rgba(20, 16, 10, 0.16) !important;
+    color: #0f1117 !important;
+}
+
+html[data-mode="light"] #blueprintDetails {
+    border-top-color: rgba(20, 16, 10, 0.14) !important;
+}
+
+html[data-mode="light"] #blueprintDetails [class*="bg-white/"] {
+    background-color: #f7f3ec !important;
+    border-color: rgba(20, 16, 10, 0.12) !important;
+}
+
+/* Theme switcher in header */
+html[data-mode="light"] [data-theme-btn] {
+    color: #4b5262 !important;
+}
+html[data-mode="light"] [data-theme-btn].text-\[\#d9b46c\] {
+    color: #7a5414 !important;
+    background-color: rgba(143, 101, 26, 0.14) !important;
+    border-color: rgba(143, 101, 26, 0.35) !important;
 }
 
 /* Kanban column drag and drop */

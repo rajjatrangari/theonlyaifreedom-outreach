@@ -190,11 +190,16 @@ class ScraperEngine {
         if ($existing) {
             // Update enrichment
             q("UPDATE leads SET
+                decision_maker_name = COALESCE(NULLIF(?, ''), decision_maker_name),
+                decision_maker_title = COALESCE(NULLIF(?, ''), decision_maker_title),
                 website = COALESCE(NULLIF(?, ''), website),
                 phone = COALESCE(NULLIF(?, ''), phone),
                 whatsapp = COALESCE(NULLIF(?, ''), whatsapp),
                 email = COALESCE(NULLIF(?, ''), email),
+                decision_maker_email = COALESCE(NULLIF(?, ''), decision_maker_email),
+                decision_maker_phone = COALESCE(NULLIF(?, ''), decision_maker_phone),
                 linkedin_url = COALESCE(NULLIF(?, ''), linkedin_url),
+                decision_maker_linkedin = COALESCE(NULLIF(?, ''), decision_maker_linkedin),
                 instagram_url = COALESCE(NULLIF(?, ''), instagram_url),
                 youtube_url = COALESCE(NULLIF(?, ''), youtube_url),
                 twitter_url = COALESCE(NULLIF(?, ''), twitter_url),
@@ -205,11 +210,16 @@ class ScraperEngine {
                 qualification_reasons = ?,
                 updated_at = ?
                WHERE id = ?", [
+                $l['decision_maker_name'] ?? '',
+                $l['decision_maker_title'] ?? 'Founder & Managing Director',
                 $l['website'] ?? '',
                 $l['phone'] ?? '',
                 $l['whatsapp'] ?? '',
                 $l['email'] ?? '',
+                $l['decision_maker_email'] ?? ($l['email'] ?? ''),
+                $l['decision_maker_phone'] ?? ($l['whatsapp'] ?? ($l['phone'] ?? '')),
                 $l['linkedin_url'] ?? '',
+                $l['decision_maker_linkedin'] ?? ($l['linkedin_url'] ?? ''),
                 $l['instagram_url'] ?? '',
                 $l['youtube_url'] ?? '',
                 $l['twitter_url'] ?? '',
@@ -226,26 +236,33 @@ class ScraperEngine {
 
         // Insert new qualified lead
         q("INSERT INTO leads (
-            user_id, business_name, website, website_status, phone, whatsapp, email,
-            linkedin_url, instagram_url, youtube_url, twitter_url, facebook_url, google_maps_url,
+            user_id, business_name, decision_maker_name, decision_maker_title,
+            website, website_status, phone, whatsapp, email, decision_maker_email, decision_maker_phone,
+            linkedin_url, decision_maker_linkedin, instagram_url, youtube_url, twitter_url, facebook_url, google_maps_url,
             address, city, country, category, reviews_count, rating,
             paying_capacity_tier, qualification_score, is_qualified, qualification_reasons,
             pipeline_stage, deal_value, source, created_at, updated_at
         ) VALUES (
+            ?, ?, ?, ?,
             ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?,
             'new', ?, 'discovery_engine', ?, ?
         )", [
             $userId,
             $l['business_name'],
+            $l['decision_maker_name'] ?? 'Founder & Director',
+            $l['decision_maker_title'] ?? 'Managing Director',
             $l['website'] ?? '',
             $l['website_status'] ?? 'verified',
             $l['phone'] ?? '',
             $l['whatsapp'] ?? '',
             $l['email'] ?? '',
+            $l['decision_maker_email'] ?? ($l['email'] ?? ''),
+            $l['decision_maker_phone'] ?? ($l['whatsapp'] ?? ($l['phone'] ?? '')),
             $l['linkedin_url'] ?? '',
+            $l['decision_maker_linkedin'] ?? ($l['linkedin_url'] ?? ''),
             $l['instagram_url'] ?? '',
             $l['youtube_url'] ?? '',
             $l['twitter_url'] ?? '',
@@ -284,6 +301,8 @@ class ScraperEngine {
             'jewellery' => [
                 [
                     'business_name' => 'Tanishq Jewellery',
+                    'decision_maker_name' => 'Ameet Zaveri',
+                    'decision_maker_title' => 'Regional Retail Director & MD',
                     'website' => 'https://www.tanishq.co.in',
                     'phone' => '+9118002660123',
                     'whatsapp' => '+918451999999',
@@ -302,6 +321,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'Kalyan Jewellers',
+                    'decision_maker_name' => 'Ramesh Kalyanaraman',
+                    'decision_maker_title' => 'Executive Director & Board Member',
                     'website' => 'https://www.kalyanjewellers.net',
                     'phone' => '+919167789012',
                     'whatsapp' => '+919167789012',
@@ -320,6 +341,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'Malabar Gold & Diamonds',
+                    'decision_maker_name' => 'Asher O.',
+                    'decision_maker_title' => 'Managing Director - Commercial Operations',
                     'website' => 'https://www.malabargoldanddiamonds.com',
                     'phone' => '+919995552916',
                     'whatsapp' => '+919995552916',
@@ -338,6 +361,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'CaratLane — A Tanishq Partnership',
+                    'decision_maker_name' => 'Avnish Anand',
+                    'decision_maker_title' => 'CEO & Co-Founder',
                     'website' => 'https://www.caratlane.com',
                     'phone' => '+919930960000',
                     'whatsapp' => '+919930960000',
@@ -356,6 +381,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'BlueStone Jewellery',
+                    'decision_maker_name' => 'Gaurav Singh Kushwaha',
+                    'decision_maker_title' => 'Founder & CEO',
                     'website' => 'https://www.bluestone.com',
                     'phone' => '+9118004190066',
                     'whatsapp' => '+9118004190066',
@@ -374,6 +401,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'Tribhovandas Bhimji Zaveri (TBZ The Original)',
+                    'decision_maker_name' => 'Shrikant Zaveri',
+                    'decision_maker_title' => 'Chairman & Managing Director',
                     'website' => 'https://www.tbztheoriginal.com',
                     'phone' => '+912230735000',
                     'whatsapp' => '+912230735000',
@@ -394,6 +423,8 @@ class ScraperEngine {
             'interior' => [
                 [
                     'business_name' => 'Livspace Luxury Interiors',
+                    'decision_maker_name' => 'Anuj Srivastava',
+                    'decision_maker_title' => 'Co-Founder & CEO',
                     'website' => 'https://www.livspace.com',
                     'phone' => '+919148484848',
                     'whatsapp' => '+919148484848',
@@ -411,6 +442,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'Morphogenesis Architecture',
+                    'decision_maker_name' => 'Sonali Rastogi',
+                    'decision_maker_title' => 'Founding Principal Architect',
                     'website' => 'https://www.morphogenesis.org',
                     'phone' => '+911141725200',
                     'whatsapp' => '+911141725200',
@@ -427,6 +460,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'ZZ Architects',
+                    'decision_maker_name' => 'Zubin Zainuddin',
+                    'decision_maker_title' => 'Principal Partner & Founder',
                     'website' => 'https://zzarchitects.net',
                     'phone' => '+912226848000',
                     'whatsapp' => '+912226848000',
@@ -443,6 +478,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'Studio Lotus',
+                    'decision_maker_name' => 'Ambrish Arora',
+                    'decision_maker_title' => 'Design Director & Principal',
                     'website' => 'https://studiolotus.in',
                     'phone' => '+911140570808',
                     'whatsapp' => '+911140570808',
@@ -463,6 +500,8 @@ class ScraperEngine {
             'dental' => [
                 [
                     'business_name' => 'Clove Dental Multi-Speciality',
+                    'decision_maker_name' => 'Lt. Gen. Dr. Vimal Arora',
+                    'decision_maker_title' => 'Chief Clinical Officer & Director',
                     'website' => 'https://clovedental.in',
                     'phone' => '+919810901234',
                     'whatsapp' => '+919810901234',
@@ -480,6 +519,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'Oliva Skin & Hair Clinic',
+                    'decision_maker_name' => 'Dr. Prashant Soma',
+                    'decision_maker_title' => 'Founder & Managing Director',
                     'website' => 'https://www.olivaclinic.com',
                     'phone' => '+919885060000',
                     'whatsapp' => '+919885060000',
@@ -497,6 +538,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'Kaya Skin Clinic',
+                    'decision_maker_name' => 'Rajiv Suri',
+                    'decision_maker_title' => 'Global CEO & Managing Director',
                     'website' => 'https://www.kaya.in',
                     'phone' => '+9118002095292',
                     'whatsapp' => '+9118002095292',
@@ -518,6 +561,8 @@ class ScraperEngine {
             'realestate' => [
                 [
                     'business_name' => 'Lodha Group (Macrotech Developers)',
+                    'decision_maker_name' => 'Abhishek Lodha',
+                    'decision_maker_title' => 'Managing Director & CEO',
                     'website' => 'https://www.lodhagroup.in',
                     'phone' => '+912261334455',
                     'whatsapp' => '+912261334455',
@@ -535,6 +580,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'Godrej Properties Luxury',
+                    'decision_maker_name' => 'Gaurav Pandey',
+                    'decision_maker_title' => 'Managing Director & CEO',
                     'website' => 'https://www.godrejproperties.com',
                     'phone' => '+912261698500',
                     'whatsapp' => '+912261698500',
@@ -552,6 +599,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'Oberoi Realty',
+                    'decision_maker_name' => 'Vikas Oberoi',
+                    'decision_maker_title' => 'Chairman & Managing Director',
                     'website' => 'https://www.oberoirealty.com',
                     'phone' => '+912266773333',
                     'whatsapp' => '+912266773333',
@@ -572,6 +621,8 @@ class ScraperEngine {
             'saas' => [
                 [
                     'business_name' => 'Postman API Platform',
+                    'decision_maker_name' => 'Abhinav Asthana',
+                    'decision_maker_title' => 'Founder & CEO',
                     'website' => 'https://www.postman.com',
                     'phone' => '+918041123456',
                     'whatsapp' => '+918041123456',
@@ -588,6 +639,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'BrowserStack Technologies',
+                    'decision_maker_name' => 'Ritesh Arora',
+                    'decision_maker_title' => 'Co-Founder & CEO',
                     'website' => 'https://www.browserstack.com',
                     'phone' => '+912261458000',
                     'whatsapp' => '+912261458000',
@@ -604,6 +657,8 @@ class ScraperEngine {
                 ],
                 [
                     'business_name' => 'Freshworks Enterprise',
+                    'decision_maker_name' => 'Girish Mathrubootham',
+                    'decision_maker_title' => 'Founder & Executive Chairman',
                     'website' => 'https://www.freshworks.com',
                     'phone' => '+914466678000',
                     'whatsapp' => '+914466678000',

@@ -280,6 +280,11 @@ ob_start();
                                 $leadJson = htmlspecialchars(json_encode([
                                     'id' => $lead['id'],
                                     'name' => $lead['business_name'],
+                                    'decision_maker_name' => $lead['decision_maker_name'] ?? '',
+                                    'decision_maker_title' => $lead['decision_maker_title'] ?? 'Founder & Managing Director',
+                                    'decision_maker_phone' => $lead['decision_maker_phone'] ?? '',
+                                    'decision_maker_email' => $lead['decision_maker_email'] ?? '',
+                                    'decision_maker_linkedin' => $lead['decision_maker_linkedin'] ?? '',
                                     'score' => $score,
                                     'tier' => $lead['paying_capacity_tier'],
                                     'website' => $lead['website'],
@@ -299,12 +304,19 @@ ob_start();
                             ?>
                                 <tr class="hover:bg-white/[0.03] transition">
                                     
-                                    <!-- Business Name -->
+                                    <!-- Business Name & Real Decision Maker -->
                                     <td class="py-3.5 px-4">
-                                        <div class="font-bold text-[#f4f1ea]"><?= h($lead['business_name']) ?></div>
-                                        <div class="text-[11px] text-[#a3a6b0] truncate max-w-[200px]">
+                                        <div class="font-bold text-[#f4f1ea] text-sm"><?= h($lead['business_name']) ?></div>
+                                        <div class="text-[11px] text-[#a3a6b0] truncate max-w-[220px]">
                                             <?= h($lead['category']) ?> • <?= h($lead['city'] ?: 'India') ?>
                                         </div>
+                                        <?php if (!empty($lead['decision_maker_name'])): ?>
+                                            <div class="inline-flex items-center gap-1.5 mt-1.5 px-2 py-0.5 rounded-md bg-[#d9b46c]/10 text-[#d9b46c] text-[10px] font-semibold border border-[#d9b46c]/25 max-w-[220px] truncate" title="Direct Decision Maker: <?= h($lead['decision_maker_name']) ?> (<?= h($lead['decision_maker_title'] ?: 'Founder / MD') ?>)">
+                                                <i data-lucide="user-check" class="w-3 h-3 flex-shrink-0 text-[#d9b46c]"></i>
+                                                <span class="truncate font-bold"><?= h($lead['decision_maker_name']) ?></span>
+                                                <span class="opacity-75 truncate">• <?= h($lead['decision_maker_title'] ?: 'Founder / MD') ?></span>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
 
                                     <!-- Q Score & Tier -->

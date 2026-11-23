@@ -126,6 +126,11 @@ ob_start();
                 $leadJson = htmlspecialchars(json_encode([
                     'id' => $lead['id'],
                     'name' => $lead['business_name'],
+                    'decision_maker_name' => $lead['decision_maker_name'] ?? '',
+                    'decision_maker_title' => $lead['decision_maker_title'] ?? 'Founder & Managing Director',
+                    'decision_maker_phone' => $lead['decision_maker_phone'] ?? '',
+                    'decision_maker_email' => $lead['decision_maker_email'] ?? '',
+                    'decision_maker_linkedin' => $lead['decision_maker_linkedin'] ?? '',
                     'score' => $score,
                     'tier' => $lead['paying_capacity_tier'],
                     'website' => $lead['website'],
@@ -149,6 +154,13 @@ ob_start();
                             <div class="truncate">
                                 <h4 class="font-bold text-[#f4f1ea] text-sm truncate"><?= h($lead['business_name']) ?></h4>
                                 <div class="text-xs text-[#a3a6b0] truncate"><?= h($lead['category']) ?> • <?= h($lead['city']) ?></div>
+                                <?php if (!empty($lead['decision_maker_name'])): ?>
+                                    <div class="inline-flex items-center gap-1.5 mt-1 px-2 py-0.5 rounded-md bg-[#d9b46c]/10 text-[#d9b46c] text-[10px] font-semibold border border-[#d9b46c]/20 max-w-full truncate" title="Direct Decision Maker: <?= h($lead['decision_maker_name']) ?> (<?= h($lead['decision_maker_title'] ?: 'Founder / MD') ?>)">
+                                        <i data-lucide="user-check" class="w-3 h-3 flex-shrink-0 text-[#d9b46c]"></i>
+                                        <span class="truncate font-bold"><?= h($lead['decision_maker_name']) ?></span>
+                                        <span class="opacity-75 truncate">• <?= h($lead['decision_maker_title'] ?: 'Founder / MD') ?></span>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                             <button type="button" onclick='openScoreAuditModal(<?= $leadJson ?>)' class="text-xs font-bold px-2 py-0.5 rounded-full border bg-[#d9b46c]/15 text-[#f3dca4] border-[#d9b46c]/30 hover:scale-105 transition" title="View Q-Score™ Audit">
                                 Q <?= $score ?>

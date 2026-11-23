@@ -62,8 +62,13 @@ switch ($action) {
 
         // Determine next stage
         $newStage = 'outreach_sent';
-        if ($touchType === 'followup_1') $newStage = 'followup_1';
-        elseif ($touchType === 'followup_2') $newStage = 'followup_2';
+        if (str_starts_with($touchType, 'playbook_')) {
+            $newStage = 'responded';
+        } elseif ($touchType === 'followup_1') {
+            $newStage = 'followup_1';
+        } elseif ($touchType === 'followup_2') {
+            $newStage = 'followup_2';
+        }
 
         $nextFollowup = date('Y-m-d', strtotime('+3 days'));
 
