@@ -525,6 +525,12 @@ function migrate_database(PDO $pdo, string $driver): void {
         $pdo->exec("DELETE FROM leads WHERE business_name LIKE '%Luxury Jewellery Brands%' OR business_name LIKE '%Signature Luxury%' OR business_name LIKE '%Prestige Luxury%' OR business_name LIKE '%Elysian Luxury%' OR business_name LIKE '%Vanguard Luxury%' OR website LIKE '%luxuryjewellerybrands.in%' OR website LIKE '%pexluxury%' OR website LIKE '%restigeluxury%' OR website LIKE '%signatureluxury%' OR email LIKE '%luxuryjewellerybrands.in%' OR email LIKE '%ignature%'");
     } catch (Throwable $e) {}
 
+    // Update corporate sender email to rajjat@theonlyaifreedom.in
+    try {
+        $pdo->exec("UPDATE users SET sender_email = 'rajjat@theonlyaifreedom.in' WHERE sender_email = 'outreach@theonlyaifreedom.in' OR sender_email = '' OR sender_email IS NULL");
+        $pdo->exec("UPDATE connected_channels SET account_identifier = 'rajjat@theonlyaifreedom.in' WHERE channel_name = 'email' AND (account_identifier = 'outreach@theonlyaifreedom.in' OR account_identifier = '' OR account_identifier = 'unconfigured')");
+    } catch (Throwable $e) {}
+
     seed_default_admin($pdo);
 }
 
@@ -552,8 +558,8 @@ function seed_default_admin(PDO $pdo): void {
             ");
             $now = now();
             $stmt->execute([
-                'The Only AI Freedom Outreach Lead',
-                'outreach@theonlyaifreedom.in',
+                'Rajjat Rangari',
+                'rajjat@theonlyaifreedom.in',
                 password_hash('Outreach_Freedom_2026!', PASSWORD_DEFAULT),
                 'The Only AI Freedom',
                 'AI Solutions & Automation Consulting',
@@ -563,7 +569,7 @@ function seed_default_admin(PDO $pdo): void {
                 'We guarantee a working AI lead capture & conversion pilot live in 7 days or full money back.',
                 'Rajjat Rangari',
                 'Founder & Automation Architect',
-                'outreach@theonlyaifreedom.in',
+                'rajjat@theonlyaifreedom.in',
                 '+917620654814',
                 '+917620654814',
                 'https://linkedin.com/company/the-only-ai-freedom',
