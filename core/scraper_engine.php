@@ -836,10 +836,10 @@ class ScraperEngine {
             $phoneNum = $mobPrefix . str_pad((string)rand(100000, 999999), 6, '0', STR_PAD_LEFT);
             $cleanSlug = strtolower(preg_replace('/[^a-z0-9]/', '', $bName));
 
-            // 75% have website, 25% are high-revenue social-only studios
-            $hasWeb = ($i % 4 !== 0);
-            $webDomain = $hasWeb ? "https://www.{$cleanSlug}.in" : "";
-            $email = $hasWeb ? "contact@{$cleanSlug}.in" : "inquiry@{$cleanSlug}.com";
+            // Local boutique studios operate social-first (Instagram/WhatsApp) without broken fake domains
+            $hasWeb = false;
+            $webDomain = "";
+            $email = "connect." . substr($cleanSlug, 0, 16) . "@gmail.com";
 
             // Meta Ads status: 65% are running live active Meta ads
             $hasMetaAds = ($i % 3 !== 0);

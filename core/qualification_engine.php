@@ -104,14 +104,15 @@ class QualificationEngine {
         // 5. Active Paid Meta Ads Analysis (Definitive Paying Capacity Indicator)
         if (!empty($lead['meta_ads_active']) && (int)$lead['meta_ads_active'] === 1) {
             $adsCount = (int)($lead['meta_ads_count'] ?? 1);
-            $runningSince = $lead['meta_ads_running_since'] ?: 'Active campaigns';
+            $runningSince = !empty($lead['meta_ads_running_since']) ? $lead['meta_ads_running_since'] : 'Active campaigns';
             $reasons[] = sprintf('Active Paid Meta Ads: %d live ad creatives (%s) — verified cashflow budget (+15)', $adsCount, $runningSince);
         }
 
         // 6. Verified Social Audience & Follower Count
         $igFollowers = (int)($lead['instagram_followers'] ?? 0);
+        $igGrowth = !empty($lead['instagram_growth']) ? $lead['instagram_growth'] : 'high engagement';
         if ($igFollowers >= 50000) {
-            $reasons[] = sprintf('High-intent audience: %s Instagram followers (%s) (+10)', number_format($igFollowers), $lead['instagram_growth'] ?: 'high engagement');
+            $reasons[] = sprintf('High-intent audience: %s Instagram followers (%s) (+10)', number_format($igFollowers), $igGrowth);
         } elseif ($igFollowers >= 10000) {
             $reasons[] = sprintf('Established audience: %s Instagram followers (+5)', number_format($igFollowers));
         }

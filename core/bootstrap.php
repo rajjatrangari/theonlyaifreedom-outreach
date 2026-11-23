@@ -603,6 +603,9 @@ function require_auth(): array {
 }
 
 function json_response(array $data, int $status = 200): void {
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
     if (!headers_sent()) {
         http_response_code($status);
         header('Content-Type: application/json; charset=utf-8');
