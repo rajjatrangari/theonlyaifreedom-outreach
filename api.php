@@ -17,18 +17,19 @@ $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 
 switch ($action) {
 
-    // 1. Scrape & Discover Qualified Leads
+    // 1. Scrape & Discover Qualified Leads (50 to 80+ leads per search)
     case 'scrape_leads':
         $keyword = trim($input['keyword'] ?? '');
         $location = trim($input['location'] ?? '');
         $minScore = (int)($input['min_score'] ?? ($user['min_score_filter'] ?? 70));
-        $limit = max(5, min(30, (int)($input['limit'] ?? 15)));
+        $limit = max(20, min(100, (int)($input['limit'] ?? 60)));
+        $autoSave = !empty($input['auto_save']) && ($input['auto_save'] === true || $input['auto_save'] === '1');
 
         if (empty($keyword)) {
             json_response(['status' => 'error', 'message' => 'Keyword / niche cannot be empty.'], 400);
         }
 
-        $result = ScraperEngine::searchAndEnrich((int)$user['id'], $keyword, $location, $minScore, $limit);
+        $result = ScraperEngine::searchAndEnrich((int)$user['id'], $keyword, $location, $minScore, $limit, $autoSave);
         json_response($result);
         break;
 
@@ -294,7 +295,43 @@ switch ($action) {
         ]);
         break;
 
-    // 10. Purge Broken / Mock Leads & Refresh
+    // 10. Bulk Save Discovered Leads to CRM Pipeline
+    case 'save_scraped_leads':
+        $leads = $input['leads'] ?? [];
+        $stage = trim($input['stage'] ?? 'new');
+
+        if (!is_array($leads) || empty($leads)) {
+            json_response(['status' => 'error', 'message' => 'No leads provided to save.'], 400);
+        }
+
+        $result = ScraperEngine::saveLeadsBatch((int)$user['id'], $leads, $stage);
+        json_response($result);
+        break;
+
+    // 11. Save Single Lead to CRM Pipeline
+    case 'save_single_lead':
+        $lead = $input['lead'] ?? null;
+        $stage = trim($input['stage'] ?? 'new');
+
+        if (!is_array($lead) || empty($lead['business_name'])) {
+            json_response(['status' => 'error', 'message' => 'Invalid lead data.'], 400);
+        }
+
+        $lead['pipeline_stage'] = $stage;
+        $saved = ScraperEngine::saveOrUpdateLead((int)$user['id'], $lead);
+
+        if (!$saved) {
+            json_response(['status' => 'error', 'message' => 'Failed to save lead.'], 500);
+        }
+
+        json_response([
+            'status' => 'success',
+            'lead_id' => $saved['id'],
+            'message' => "Saved {$saved['business_name']} to CRM Pipeline."
+        ]);
+        break;
+
+    // 12. Purge Broken / Mock Leads & Refresh
     case 'purge_synthetic_leads':
         q("DELETE FROM leads WHERE business_name LIKE '%Luxury Jewellery Brands%' OR business_name LIKE '%Signature Luxury%' OR business_name LIKE '%Prestige Luxury%' OR business_name LIKE '%Elysian Luxury%' OR business_name LIKE '%Vanguard Luxury%' OR website LIKE '%luxuryjewellerybrands.in%' OR website LIKE '%pexluxury%' OR website LIKE '%restigeluxury%' OR website LIKE '%signatureluxury%' OR email LIKE '%luxuryjewellerybrands.in%' OR email LIKE '%ignature%'");
 

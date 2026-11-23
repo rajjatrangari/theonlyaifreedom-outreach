@@ -506,6 +506,76 @@ html[data-mode="light"] a.text-\[\#d9b46c\] {
 .hidden { display: none; }
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* Light Mode Readability & Super Contrast Polish */
+html[data-mode="light"] .subtext-contrast {
+    color: #334155 !important; /* Deep Slate 700 */
+    font-weight: 600 !important;
+}
+
+html[data-mode="light"] .form-label {
+    color: #0f1117 !important;
+    font-weight: 800 !important;
+}
+
+html[data-mode="light"] .dm-pill {
+    background-color: #fef3c7 !important;
+    color: #78350f !important;
+    border: 1px solid #f59e0b !important;
+}
+
+html[data-mode="light"] .score-pill-emerald {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+    border: 1px solid #10b981 !important;
+}
+
+html[data-mode="light"] .score-pill-blue {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+    border: 1px solid #3b82f6 !important;
+}
+
+html[data-mode="light"] input,
+html[data-mode="light"] select,
+html[data-mode="light"] textarea {
+    background-color: #ffffff !important;
+    color: #0f1117 !important;
+    border: 1.5px solid #cbd5e1 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-mode="light"] input::placeholder,
+html[data-mode="light"] textarea::placeholder {
+    color: #64748b !important;
+    opacity: 1 !important;
+}
+
+html[data-mode="light"] .logo-emblem-badge {
+    background-color: #07080c !important;
+    background: #07080c !important;
+    border: 1.5px solid #d9b46c !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Dark Mode Pill Defaults */
+.dm-pill {
+    background-color: rgba(217, 180, 108, 0.1);
+    color: #d9b46c;
+    border: 1px solid rgba(217, 180, 108, 0.25);
+}
+
+.score-pill-emerald {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.score-pill-blue {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
 /* Modal animation */
 #modalBackdrop.flex {
     animation: fadeIn 0.2s ease-out forwards;

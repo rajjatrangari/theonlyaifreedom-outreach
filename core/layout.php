@@ -39,8 +39,8 @@ function render_layout(string $title, string $activePage, string $content, ?arra
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/assets/css/app.css?v=5">
-    <script src="/assets/js/theme.js?v=5"></script>
+    <link rel="stylesheet" href="/assets/css/app.css?v=6">
+    <script src="/assets/js/theme.js?v=6"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -83,7 +83,7 @@ function render_layout(string $title, string $activePage, string $content, ?arra
         <!-- App Logo & Branding Header -->
         <div class="h-20 flex items-center justify-between px-6 border-b border-white/[0.08] bg-[#0c0e14]">
             <a href="/index.php" class="flex items-center gap-3">
-                <div class="h-11 w-11 rounded-xl bg-[#07080c] p-1.5 border border-[#d9b46c]/40 shadow-[0_4px_16px_rgba(0,0,0,0.4)] flex items-center justify-center flex-shrink-0 logo-emblem-badge">
+                <div class="h-11 w-11 rounded-xl p-1.5 flex items-center justify-center flex-shrink-0 logo-emblem-badge" style="background-color: #07080c !important; border: 1.5px solid #d9b46c !important; box-shadow: 0 4px 18px rgba(0,0,0,0.5) !important;">
                     <img src="/assets/brand/logo-emblem.png" alt="The Only AI Freedom" class="h-full w-auto object-contain">
                 </div>
                 <div>
@@ -222,7 +222,7 @@ function render_layout(string $title, string $activePage, string $content, ?arra
     <!-- Notification Toast -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <script src="/assets/js/app.js?v=5"></script>
+    <script src="/assets/js/app.js?v=6"></script>
     <script>
         lucide.createIcons();
         function toggleSidebar() {
