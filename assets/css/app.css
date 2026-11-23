@@ -331,6 +331,19 @@ html[data-mode="light"] table tbody tr:hover {
     background-color: rgba(217, 180, 108, 0.14) !important;
 }
 
+/* Logo Jewel Badge (Preserves luxury obsidian contrast in both Light & Dark modes) */
+.logo-emblem-badge {
+    background-color: #07080c !important;
+    border: 1px solid rgba(217, 180, 108, 0.45) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+html[data-mode="light"] .logo-emblem-badge {
+    background-color: #07080c !important;
+    border: 1px solid rgba(217, 180, 108, 0.55) !important;
+    box-shadow: 0 4px 14px rgba(25, 20, 10, 0.22) !important;
+}
+
 /* Modal in Light Mode */
 html[data-mode="light"] #modalBox {
     background-color: #ffffff !important;
@@ -422,6 +435,76 @@ html[data-mode="light"] [data-theme-btn].text-\[\#d9b46c\] {
     opacity: 0.5;
     transform: rotate(2deg);
 }
+
+/* Additional Light Mode Super-Contrast Overrides */
+html[data-mode="light"] table td,
+html[data-mode="light"] table th {
+    color: #0f1117 !important;
+}
+
+html[data-mode="light"] table td [class*="text-[#f4f1ea]"],
+html[data-mode="light"] table td .font-bold {
+    color: #0f1117 !important;
+}
+
+html[data-mode="light"] table td [class*="text-[#a3a6b0]"],
+html[data-mode="light"] table td [class*="text-[#6e7280]"] {
+    color: #475569 !important;
+}
+
+html[data-mode="light"] .bg-emerald-500\/15 {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+    border-color: #a7f3d0 !important;
+}
+
+html[data-mode="light"] .bg-blue-500\/15 {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+    border-color: #bfdbfe !important;
+}
+
+html[data-mode="light"] .bg-amber-500\/15 {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+    border-color: #fde68a !important;
+}
+
+html[data-mode="light"] .bg-\[\#d9b46c\]\/10,
+html[data-mode="light"] .bg-\[\#d9b46c\]\/15,
+html[data-mode="light"] .bg-\[\#d9b46c\]\/20,
+html[data-mode="light"] .bg-\[\#d9b46c\]\/25 {
+    background-color: rgba(217, 180, 108, 0.2) !important;
+    color: #78350f !important;
+    border-color: rgba(217, 180, 108, 0.45) !important;
+}
+
+html[data-mode="light"] a.text-\[\#d9b46c\] {
+    color: #92400e !important;
+    font-weight: 700 !important;
+}
+
+/* Standalone Core Layout Styles (Protects against 3rd party CDN blocking) */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-end { justify-content: flex-end; }
+.justify-start { justify-content: flex-start; }
+.justify-center { justify-content: center; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.min-h-0 { min-height: 0; }
+.overflow-hidden { overflow: hidden; }
+.overflow-y-auto { overflow-y: auto; }
+.overflow-x-auto { overflow-x: auto; }
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed { position: fixed; }
+.inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+.z-50 { z-index: 50; }
+.hidden { display: none; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Modal animation */
 #modalBackdrop.flex {

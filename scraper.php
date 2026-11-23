@@ -317,6 +317,15 @@ ob_start();
                                                 <span class="opacity-75 truncate">• <?= h($lead['decision_maker_title'] ?: 'Founder / MD') ?></span>
                                             </div>
                                         <?php endif; ?>
+                                        <?php if (!empty($lead['meta_ads_active'])): ?>
+                                            <div class="mt-1">
+                                                <a href="<?= h($lead['meta_ads_library_url'] ?: 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=' . urlencode($lead['business_name'])) ?>" 
+                                                   target="_blank" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 text-[10px] font-semibold border border-blue-500/30 hover:underline" title="View Active Ads in Meta Ad Library">
+                                                    <i data-lucide="radio" class="w-3 h-3"></i>
+                                                    <span>📢 <?= (int)$lead['meta_ads_count'] ?> Active Ads</span>
+                                                </a>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
 
                                     <!-- Q Score & Tier -->
@@ -387,6 +396,11 @@ ob_start();
                                                 </a>
                                             <?php endif; ?>
                                         </div>
+                                        <?php if (!empty($lead['instagram_followers'])): ?>
+                                            <div class="text-[10px] text-[#a3a6b0] mt-1 font-mono">
+                                                📸 <?= number_format((int)$lead['instagram_followers']) ?> IG <?= h($lead['instagram_growth'] ?? '') ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
 
                                     <!-- Google Reviews -->

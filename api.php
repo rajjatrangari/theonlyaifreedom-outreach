@@ -219,6 +219,96 @@ switch ($action) {
         fclose($out);
         exit;
 
+    // 8. Send Direct Inbox Message
+    case 'send_inbox_message':
+        $leadId = (int)($input['lead_id'] ?? 0);
+        $channel = trim($input['channel'] ?? 'whatsapp');
+        $message = trim($input['message'] ?? '');
+        $touchType = trim($input['touch_type'] ?? 'inbox_direct');
+
+        if (empty($message)) {
+            json_response(['status' => 'error', 'message' => 'Message content cannot be empty.'], 400);
+        }
+
+        $lead = one("SELECT * FROM leads WHERE id = ? AND user_id = ?", [$leadId, $user['id']]);
+        if (!$lead) {
+            json_response(['status' => 'error', 'message' => 'Lead not found.'], 404);
+        }
+
+        // Insert log record with direction = 'outbound'
+        q("INSERT INTO outreach_logs (lead_id, user_id, channel, touch_type, message_sent, outcome, direction, created_at)
+           VALUES (?, ?, ?, ?, ?, 'delivered', 'outbound', ?)", [
+            $leadId,
+            $user['id'],
+            $channel,
+            $touchType,
+            $message,
+            now()
+        ]);
+
+        $logId = last_id();
+
+        // Update lead activity & stage
+        q("UPDATE leads SET 
+            last_contacted_at = ?,
+            last_channel = ?,
+            last_activity_at = ?,
+            pipeline_stage = CASE WHEN pipeline_stage IN ('new', 'outreach_sent') THEN 'outreach_sent' ELSE pipeline_stage END,
+            updated_at = ?
+           WHERE id = ? AND user_id = ?", [
+            now(),
+            $channel,
+            now(),
+            now(),
+            $leadId,
+            $user['id']
+        ]);
+
+        json_response([
+            'status' => 'success',
+            'log_id' => $logId,
+            'lead_id' => $leadId,
+            'channel' => $channel,
+            'sent_at' => now()
+        ]);
+        break;
+
+    // 9. Get Inbox Messages for a Lead
+    case 'get_inbox_messages':
+        $leadId = (int)($_GET['lead_id'] ?? ($input['lead_id'] ?? 0));
+        $lead = one("SELECT * FROM leads WHERE id = ? AND user_id = ?", [$leadId, $user['id']]);
+        if (!$lead) {
+            json_response(['status' => 'error', 'message' => 'Lead not found.'], 404);
+        }
+
+        $messages = all("
+            SELECT * FROM outreach_logs
+            WHERE lead_id = ? AND user_id = ?
+            ORDER BY id ASC
+        ", [$leadId, $user['id']]);
+
+        json_response([
+            'status' => 'success',
+            'lead' => $lead,
+            'messages' => $messages,
+        ]);
+        break;
+
+    // 10. Purge Broken / Mock Leads & Refresh
+    case 'purge_synthetic_leads':
+        q("DELETE FROM leads WHERE business_name LIKE '%Luxury Jewellery Brands%' OR business_name LIKE '%Signature Luxury%' OR business_name LIKE '%Prestige Luxury%' OR business_name LIKE '%Elysian Luxury%' OR business_name LIKE '%Vanguard Luxury%' OR website LIKE '%luxuryjewellerybrands.in%' OR website LIKE '%pexluxury%' OR website LIKE '%restigeluxury%' OR website LIKE '%signatureluxury%' OR email LIKE '%luxuryjewellerybrands.in%' OR email LIKE '%ignature%'");
+
+        $remaining = (int)val("SELECT COUNT(*) FROM leads WHERE user_id = ?", [$user['id']]);
+        if ($remaining === 0) {
+            ScraperEngine::searchAndEnrich((int)$user['id'], 'Luxury Jewellery', 'Mumbai, India', 75, 6);
+        }
+
+        json_response([
+            'status' => 'success',
+            'message' => 'Cleaned mock records and restored live verified leads.'
+        ]);
+        break;
+
     default:
         json_response(['status' => 'error', 'message' => 'Unknown API action.'], 400);
         break;

@@ -193,6 +193,16 @@ ob_start();
                                         </div>
                                     <?php endif; ?>
 
+                                    <?php if (!empty($lead['meta_ads_active'])): ?>
+                                        <div class="mt-0.5">
+                                            <a href="<?= h($lead['meta_ads_library_url'] ?: 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=' . urlencode($lead['business_name'])) ?>" 
+                                               target="_blank" class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-blue-500/15 text-blue-400 text-[9px] font-semibold border border-blue-500/30 hover:underline">
+                                                <i data-lucide="radio" class="w-2.5 h-2.5"></i>
+                                                <span>📢 <?= (int)$lead['meta_ads_count'] ?> Active Ads</span>
+                                            </a>
+                                        </div>
+                                    <?php endif; ?>
+
                                     <!-- Value & Follow-up Badges -->
                                     <div class="flex items-center justify-between text-[11px] pt-1">
                                         <span class="font-semibold text-[#f4f1ea]">

@@ -20,6 +20,7 @@ function render_layout(string $title, string $activePage, string $content, ?arra
     $navItems = [
         'dashboard' => ['label' => 'Dashboard', 'url' => '/index.php', 'icon' => 'layout-dashboard'],
         'scraper'   => ['label' => 'Lead Scraper', 'url' => '/scraper.php', 'icon' => 'radar', 'badge' => 'Q-Score™'],
+        'inbox'     => ['label' => 'Unified Inbox', 'url' => '/inbox.php', 'icon' => 'messages-square', 'badge' => 'Live', 'badgeColor' => 'emerald'],
         'crm'       => ['label' => 'CRM Pipeline', 'url' => '/crm.php', 'icon' => 'kanban', 'badge' => $dueCount > 0 ? (string)$dueCount : null, 'badgeColor' => 'rose'],
         'outreach'  => ['label' => 'AI Outreach', 'url' => '/outreach.php', 'icon' => 'send-horizontal'],
         'channels'  => ['label' => 'Channels Hub', 'url' => '/channels.php', 'icon' => 'link-2'],
@@ -38,8 +39,8 @@ function render_layout(string $title, string $activePage, string $content, ?arra
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/assets/css/app.css?v=4">
-    <script src="/assets/js/theme.js?v=4"></script>
+    <link rel="stylesheet" href="/assets/css/app.css?v=5">
+    <script src="/assets/js/theme.js?v=5"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -82,10 +83,12 @@ function render_layout(string $title, string $activePage, string $content, ?arra
         <!-- App Logo & Branding Header -->
         <div class="h-20 flex items-center justify-between px-6 border-b border-white/[0.08] bg-[#0c0e14]">
             <a href="/index.php" class="flex items-center gap-3">
-                <img src="/assets/brand/logo-emblem.png" alt="The Only AI Freedom" class="h-10 w-auto object-contain">
+                <div class="h-11 w-11 rounded-xl bg-[#07080c] p-1.5 border border-[#d9b46c]/40 shadow-[0_4px_16px_rgba(0,0,0,0.4)] flex items-center justify-center flex-shrink-0 logo-emblem-badge">
+                    <img src="/assets/brand/logo-emblem.png" alt="The Only AI Freedom" class="h-full w-auto object-contain">
+                </div>
                 <div>
-                    <div class="font-bold text-[#f4f1ea] text-sm tracking-tight leading-tight flex items-center gap-1">
-                        The Only <span class="text-[#d9b46c]">Ai</span> Freedom
+                    <div class="font-extrabold text-[#f4f1ea] text-sm tracking-tight leading-tight flex items-center gap-1">
+                        The Only <span class="text-[#d9b46c] font-black">Ai</span> Freedom
                     </div>
                     <div class="text-[11px] text-[#a3a6b0] flex items-center gap-1 font-mono">
                         <span>Outreach OS</span>
@@ -219,7 +222,7 @@ function render_layout(string $title, string $activePage, string $content, ?arra
     <!-- Notification Toast -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <script src="/assets/js/app.js?v=4"></script>
+    <script src="/assets/js/app.js?v=5"></script>
     <script>
         lucide.createIcons();
         function toggleSidebar() {

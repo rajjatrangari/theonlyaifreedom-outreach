@@ -39,11 +39,35 @@ class AIGenerator {
         $senderName = !empty($user['sender_name']) ? $user['sender_name'] : (!empty($user['name']) ? $user['name'] : 'Rajjat Rangari');
         $senderTitle = !empty($user['sender_title']) ? $user['sender_title'] : 'Founder';
         $myBusiness = !empty($user['business_name']) ? $user['business_name'] : 'The Only AI Freedom';
-        $myOffering = !empty($user['business_offering']) ? $user['business_offering'] : 'custom AI client acquisition workflows';
+        $rawOffering = !empty($user['business_offering']) ? $user['business_offering'] : 'custom AI client acquisition workflows';
+        $myOffering = preg_replace('/^(we\s+(deliver|build|specialize\s+in|provide|offer)\s+)/i', '', $rawOffering);
         $myUsp = !empty($user['usp_hook']) ? $user['usp_hook'] : 'We deploy a dedicated lead conversion system live in 7 days.';
         $senderPhone = $user['sender_whatsapp'] ?: ($user['sender_phone'] ?: '+917620654814');
         $senderEmail = $user['sender_email'] ?: ($user['email'] ?: 'outreach@theonlyaifreedom.in');
         $pricing = !empty($user['business_pricing']) ? $user['business_pricing'] : 'flexible ROI-linked growth packages';
+
+        // Dynamic Audit Signals Hook (Meta Ads, Website Opportunity, Social Proof)
+        $hasMetaAds = !empty($lead['meta_ads_active']) && (int)$lead['meta_ads_active'] === 1;
+        $adsCount = (int)($lead['meta_ads_count'] ?? 0);
+        $hasNoWebsite = empty($lead['website']) || (isset($lead['has_website']) && (int)$lead['has_website'] === 0);
+        $igFollowers = (int)($lead['instagram_followers'] ?? 0);
+
+        if ($hasMetaAds && $adsCount > 0) {
+            $hookEn = "Saw your active Meta ad campaigns ({$adsCount} live creatives) scaling {$businessName} in {$city}.";
+            $hookHinglish = "{$city} mein {$businessName} ka active Meta ad campaign ({$adsCount} live ads) dekha — marketing kaafi strong hai.";
+            $hookHi = "{$city} में {$businessName} के सक्रिय विज्ञापन अभियान ({$adsCount} लाइव विज्ञापन) और ब्रांड उपस्थिति को देखकर अत्यधिक प्रभावित हुआ।";
+            $hookMr = "{$city} मधील {$businessName} च्या सक्रिय जाहिराती ({$adsCount} लाइव्ह जाहिराती) आणि ब्रँडचा विस्तार पाहून खूप आनंद झाला.";
+        } elseif ($hasNoWebsite) {
+            $hookEn = "Noticed {$businessName} has exceptional customer traction on social media, but no automated commercial website/portal yet.";
+            $hookHinglish = "Dekha ki {$businessName} ka social media par demand kaafi strong hai, par direct automated booking portal abhi setup nahi hai.";
+            $hookHi = "सोशल मीडिया पर {$businessName} की मजबूत मांग और ब्रांड प्रतिष्ठा देखी, लेकिन सीधे ग्राहकों के लिए अभी कोई समर्पित वेब पोर्टल नहीं है।";
+            $hookMr = "सोशल मीडियावर {$businessName} चे उत्तम काम आणि ग्राहकांची पसंती पाहिली, परंतु थेट नोंदणीसाठी अद्याप स्वतंत्र वेब पोर्टल उपलब्ध नाही.";
+        } else {
+            $hookEn = "Saw your work scaling {$businessName} in {$city}" . ($reviews > 15 ? " with your {$reviews}+ reviews ({$rating}★)" : "") . ".";
+            $hookHinglish = "{$city} me {$businessName} ka brand footprint aur customer trust" . ($reviews > 15 ? " ({$reviews}+ reviews, {$rating}★)" : "") . " kaafi impressive hai!";
+            $hookHi = "{$city} में {$businessName} के उत्कृष्ट कार्य और ग्राहक विश्वास" . ($reviews > 15 ? " ({$reviews}+ समीक्षाएं, {$rating}★)" : "") . " को देखकर आपसे सीधा संपर्क कर रहा हूँ।";
+            $hookMr = "{$city} मधील {$businessName} चे काम आणि ग्राहकांचा विश्वास" . ($reviews > 15 ? " ({$reviews}+ सकारात्मक अभिप्राय, {$rating}★)" : "") . " अतिशय दर्जेदार आहे.";
+        }
 
         // All languages bundle
         $sequences = [
@@ -54,7 +78,7 @@ class AIGenerator {
                 'language_label' => 'English',
                 'whatsapp' => [
                     'initial' => "{$dmSalutationEn},\n\n"
-                        . "Saw your work scaling {$businessName} in {$city}.\n\n"
+                        . "{$hookEn}\n\n"
                         . "Quick question: Are you looking to add more high-ticket clients this quarter, or is your team already at full capacity?\n\n"
                         . "We recently built a direct acquisition workflow for a peer {$niche} brand that added 18 qualified buyers last month with zero ad waste.\n\n"
                         . "Worth a 60-second video walkthrough, or completely off base?",
@@ -120,7 +144,7 @@ class AIGenerator {
                 'language_label' => 'Hinglish (Conversational)',
                 'whatsapp' => [
                     'initial' => "{$dmSalutationHinglish},\n\n"
-                        . "{$city} me {$businessName} ka growth aur brand presence dekh kar kaafi impress hua!\n\n"
+                        . "{$hookHinglish}\n\n"
                         . "Ek quick question tha: Kya aap abhi {$city} me new high-ticket clients expand karne ke liye open hain, ya team already fully booked hai?\n\n"
                         . "Humne recently ek similar {$niche} brand ke liye direct client engine setup kiya tha jisse har mahine 18+ high-budget buyers direct connect huye bina ad spend waste kiye.\n\n"
                         . "Agar aap open ho, toh kya ek 2-minute ka short video walkthrough bhej doon? Zero obligation!",
@@ -186,7 +210,7 @@ class AIGenerator {
                 'language_label' => 'Hindi (हिंदी)',
                 'whatsapp' => [
                     'initial' => "{$dmSalutationHi},\n\n"
-                        . "{$city} में {$businessName} की प्रतिष्ठा और उत्कृष्ट कार्य देखकर बहुत प्रसन्नता हुई।\n\n"
+                        . "{$hookHi}\n\n"
                         . "एक सीधा और संक्षिप्त प्रश्न: क्या आप इस तिमाही में अपने व्यवसाय के लिए नए उच्च-मूल्य (High-Ticket) ग्राहकों को जोड़ने के लिए तैयार हैं, अथवा आपकी टीम पहले से ही पूर्णतः व्यस्त है?\n\n"
                         . "हमने हाल ही में एक प्रतिष्ठित {$niche} ब्रांड के लिए एक स्वचालित ग्राहक प्रणाली स्थापित की, जिससे बिना विज्ञापन व्यर्थ किए 18 से अधिक सत्यापित ग्राहक सीधे जुड़े।\n\n"
                         . "यदि आप अनुमति दें, तो क्या मैं इसका 2 मिनट का वीडियो विवरण आपके साथ साझा करूँ?",
@@ -252,7 +276,7 @@ class AIGenerator {
                 'language_label' => 'Marathi (मराठी)',
                 'whatsapp' => [
                     'initial' => "{$dmSalutationMr},\n\n"
-                        . "{$city} मध्ये {$businessName} चं सातत्यपूर्ण काम आणि ब्रँडची वाढ पाहून खूप आनंद झाला.\n\n"
+                        . "{$hookMr}\n\n"
                         . "एक थेट आणि महत्त्वाचा प्रश्न: या तिमाहीत {$businessName} साठी नवीन हाय-तिकीट (प्रीमियम) ग्राहक जोडण्यास आपण तयार आहात का, की आपली टीम आधीच पूर्णपणे व्यस्त आहे?\n\n"
                         . "आम्ही नुकतीच एका नामांकित {$niche} ब्रँडसाठी एक थेट ग्राहक प्रणाली सुरू केली, ज्यातून जाहिरातींवर विनाकारण खर्च न करता दरमहा १८ हून अधिक खात्रीशीर ग्राहक जोडले गेले.\n\n"
                         . "आपण अनुमती दिल्यास, मी याबद्दलचा २ मिनिटांचा माहितीपूर्ण व्हिडिओ आपल्यासोबत शेअर करू का?",

@@ -36,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/assets/css/app.css?v=2">
-    <script src="/assets/js/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/app.css?v=5">
+    <script src="/assets/js/theme.js?v=5"></script>
 </head>
 <body class="h-full flex items-center justify-center p-4 font-sans">
     
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <!-- Logo & Branding -->
         <div class="text-center space-y-3">
-            <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-[#11141c]/90 border border-white/[0.08] shadow-[0_10px_35px_rgba(0,0,0,0.8)] mb-1">
+            <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-[#07080c] border border-[#d9b46c]/40 shadow-[0_10px_35px_rgba(0,0,0,0.8)] mb-1 logo-emblem-badge">
                 <img src="/assets/brand/logo-emblem.png" alt="The Only AI Freedom" class="h-12 w-auto object-contain">
             </div>
             <div>

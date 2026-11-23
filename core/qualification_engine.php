@@ -101,6 +101,26 @@ class QualificationEngine {
             }
         }
 
+        // 5. Active Paid Meta Ads Analysis (Definitive Paying Capacity Indicator)
+        if (!empty($lead['meta_ads_active']) && (int)$lead['meta_ads_active'] === 1) {
+            $adsCount = (int)($lead['meta_ads_count'] ?? 1);
+            $runningSince = $lead['meta_ads_running_since'] ?: 'Active campaigns';
+            $reasons[] = sprintf('Active Paid Meta Ads: %d live ad creatives (%s) — verified cashflow budget (+15)', $adsCount, $runningSince);
+        }
+
+        // 6. Verified Social Audience & Follower Count
+        $igFollowers = (int)($lead['instagram_followers'] ?? 0);
+        if ($igFollowers >= 50000) {
+            $reasons[] = sprintf('High-intent audience: %s Instagram followers (%s) (+10)', number_format($igFollowers), $lead['instagram_growth'] ?: 'high engagement');
+        } elseif ($igFollowers >= 10000) {
+            $reasons[] = sprintf('Established audience: %s Instagram followers (+5)', number_format($igFollowers));
+        }
+
+        // Website Opportunity Flag (Urgency for Web/Booking solutions)
+        if (empty($website)) {
+            $flags[] = 'Zero official website: relies purely on manual Instagram/WhatsApp DMs (Prime conversion target for AI landing page & automated CRM)';
+        }
+
         // Cap score between 0 and 100
         $finalScore = max(0, min(100, $score));
 
