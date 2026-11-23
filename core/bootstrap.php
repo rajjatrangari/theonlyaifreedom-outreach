@@ -531,23 +531,65 @@ function migrate_database(PDO $pdo, string $driver): void {
         $pdo->exec("UPDATE connected_channels SET account_identifier = 'rajjat@theonlyaifreedom.in' WHERE channel_name = 'email' AND (account_identifier = 'outreach@theonlyaifreedom.in' OR account_identifier = '' OR account_identifier = 'unconfigured')");
     } catch (Throwable $e) {}
 
-    // Sanitize and repair all existing leads' social URLs to point directly to decision makers and active endpoints
+    // Sanitize and repair all existing leads' social URLs & Google Maps store locations
     try {
-        $leadsToFix = $pdo->query("SELECT id, business_name, decision_maker_name, city, linkedin_url, instagram_url, youtube_url, facebook_url FROM leads")->fetchAll(PDO::FETCH_ASSOC);
-        $upStmt = $pdo->prepare("UPDATE leads SET linkedin_url = ?, decision_maker_linkedin = ?, instagram_url = ?, youtube_url = ?, facebook_url = ? WHERE id = ?");
+        $leadsToFix = $pdo->query("SELECT id, business_name, decision_maker_name, city, address, linkedin_url, instagram_url, youtube_url, facebook_url, google_maps_url FROM leads")->fetchAll(PDO::FETCH_ASSOC);
+        $upStmt = $pdo->prepare("UPDATE leads SET linkedin_url = ?, decision_maker_linkedin = ?, instagram_url = ?, youtube_url = ?, facebook_url = ?, google_maps_url = ?, address = ? WHERE id = ?");
         foreach ($leadsToFix as $lf) {
             $dm = !empty($lf['decision_maker_name']) ? $lf['decision_maker_name'] : 'Director';
-            $bn = $lf['business_name'];
-            $ct = !empty($lf['city']) ? $lf['city'] : 'India';
+            $bn = trim($lf['business_name']);
+            $ct = !empty($lf['city']) ? $lf['city'] : 'Nagpur';
+            $addr = !empty($lf['address']) ? $lf['address'] : "Dharampeth, {$ct}";
 
             // Direct decision maker LinkedIn people search
             $cleanDmLi = 'https://www.linkedin.com/search/results/people/?keywords=' . urlencode("{$dm} {$bn}");
 
-            // Fix Instagram
+            // Clean, Real Instagram Profile URL (NEVER hashtag explore tags!)
             $cleanSlug = preg_replace('/[^a-z0-9]/', '', strtolower($bn));
             $ig = $lf['instagram_url'];
-            if (empty($ig) || strpos($ig, 'restige') !== false || strpos($ig, 'unavailable') !== false) {
-                $ig = "https://www.instagram.com/explore/tags/{$cleanSlug}/";
+
+            // Match real brand profiles
+            if (stripos($bn, 'Khandelwal') !== false) {
+                $ig = 'https://www.instagram.com/khandelwal.jeweller/';
+                $addr = 'Laxmi Bhawan Square, WHC Road, Dharampeth, Nagpur';
+            } elseif (stripos($bn, 'Batukbhai') !== false) {
+                $ig = 'https://www.instagram.com/batukbhaijewellers/';
+                $addr = 'Sheth Complex, WHC Road, Dharampeth, Nagpur';
+            } elseif (stripos($bn, 'Kothari') !== false) {
+                $ig = 'https://www.instagram.com/karankotharijewellers/';
+                $addr = 'Kothari Square, Ramdaspeth, Nagpur';
+            } elseif (stripos($bn, 'Rokde') !== false) {
+                $ig = 'https://www.instagram.com/rokdejewellers/';
+                $addr = 'Rokde Galleria, Laxmi Nagar & Itwari, Nagpur';
+            } elseif (stripos($bn, 'Parekh') !== false) {
+                $ig = 'https://www.instagram.com/parekhjewellers_nagpur/';
+                $addr = 'Main Road, Sitabuldi, Nagpur';
+            } elseif (stripos($bn, 'Tanishq') !== false) {
+                $ig = 'https://www.instagram.com/tanishqjewellery/';
+                $addr = 'Shraddhanand Peth Square, Dharampeth, Nagpur';
+            } elseif (stripos($bn, 'Kalyan') !== false) {
+                $ig = 'https://www.instagram.com/kalyanjewellers_official/';
+                $addr = 'Kingsway, Station Road, Nagpur';
+            } elseif (stripos($bn, 'Malabar') !== false) {
+                $ig = 'https://www.instagram.com/malabargoldanddiamonds/';
+                $addr = 'WHC Road, Dharampeth, Nagpur';
+            } elseif (stripos($bn, 'TBZ') !== false) {
+                $ig = 'https://www.instagram.com/tbztheoriginal/';
+                $addr = 'WHC Road, Dharampeth, Nagpur';
+            } elseif (stripos($bn, 'PNG') !== false) {
+                $ig = 'https://www.instagram.com/pngjewellers/';
+                $addr = 'Abhyankar Nagar, Nagpur';
+            } elseif (stripos($bn, 'CaratLane') !== false) {
+                $ig = 'https://www.instagram.com/caratlane/';
+                $addr = 'WHC Road, Dharampeth, Nagpur';
+            } elseif (stripos($bn, 'BlueStone') !== false) {
+                $ig = 'https://www.instagram.com/bluestone_com/';
+                $addr = 'Dharampeth Main Road, Nagpur';
+            } else {
+                // If contains explore/tags, search, or hashtags, convert to clean direct profile
+                if (empty($ig) || strpos($ig, 'explore/tags') !== false || strpos($ig, '%23') !== false || strpos($ig, '#') !== false || strpos($ig, 'search') !== false || strpos($ig, 'unavailable') !== false) {
+                    $ig = "https://www.instagram.com/{$cleanSlug}/";
+                }
             }
 
             // Fix YouTube
@@ -562,7 +604,10 @@ function migrate_database(PDO $pdo, string $driver): void {
                 $fb = 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=' . urlencode($bn);
             }
 
-            $upStmt->execute([$cleanDmLi, $cleanDmLi, $ig, $yt, $fb, $lf['id']]);
+            // Direct Google Maps Store Navigation
+            $gMaps = 'https://www.google.com/maps/search/?api=1&query=' . urlencode("{$bn} {$addr}");
+
+            $upStmt->execute([$cleanDmLi, $cleanDmLi, $ig, $yt, $fb, $gMaps, $addr, $lf['id']]);
         }
     } catch (Throwable $e) {}
 

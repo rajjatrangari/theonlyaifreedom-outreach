@@ -380,6 +380,10 @@ function renderOutreachModalContent(lead, sequence, activeChannel) {
                             <span>Official Website</span>
                         </a>
                     ` : ''}
+                    <a href="${googleMapsUrl}" target="_blank" class="text-rose-400 hover:underline flex items-center gap-1 font-semibold" title="Direct Store Location & Directions">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-500"></i>
+                        <span>Store on Google Maps ↗</span>
+                    </a>
                 </div>
             </div>
         </div>
