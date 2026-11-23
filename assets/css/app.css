@@ -257,13 +257,13 @@ html[data-mode="light"] .bg-slate-900\/90,
 html[data-mode="light"] .bg-slate-950,
 html[data-mode="light"] .bg-slate-950\/40,
 html[data-mode="light"] .bg-slate-950\/80,
-html[data-mode="light"] .bg-\[\#0c0e14\],
-html[data-mode="light"] .bg-\[\#0c0e14\]\/80,
-html[data-mode="light"] .bg-\[\#0c0e14\]\/95,
-html[data-mode="light"] .bg-\[\#11141c\],
-html[data-mode="light"] .bg-\[\#161a24\],
-html[data-mode="light"] .bg-\[\#07080c\]\/60,
-html[data-mode="light"] .bg-\[\#07080c\]\/80 {
+html[data-mode="light"] [class*="bg-[#0c0e14]"],
+html[data-mode="light"] [class*="bg-[#11141c]"],
+html[data-mode="light"] [class*="bg-[#161a24]"],
+html[data-mode="light"] [class*="bg-[#0e111a]"],
+html[data-mode="light"] [class*="bg-[#07080c]"]:not(.logo-emblem-badge),
+html[data-mode="light"] .bg-slate-900,
+html[data-mode="light"] .bg-slate-950 {
     background-color: #f7f3ec !important;
 }
 
@@ -662,6 +662,59 @@ html[data-mode="light"] .social-icon-btn {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
 }
 
+/* Unified Inbox Base Defaults (Dark Obsidian Mode) */
+.chat-timeline-container {
+    background-color: rgba(7, 8, 12, 0.45);
+}
+
+.inbox-composer-card {
+    background-color: rgba(12, 14, 20, 0.95);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.inbox-playbook-chip {
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f4f1ea;
+}
+.inbox-playbook-chip:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(217, 180, 108, 0.4);
+}
+
+.inbox-composer-textarea {
+    background-color: #11141c;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f4f1ea;
+}
+.inbox-composer-textarea::placeholder {
+    color: #6e7280;
+}
+.inbox-composer-textarea:focus {
+    border-color: #d9b46c;
+}
+
+.inbox-channel-select {
+    background-color: #11141c;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f4f1ea;
+}
+
+.inbox-draft-btn {
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f4f1ea;
+}
+.inbox-draft-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.inbox-ready-card {
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #f4f1ea;
+}
+
 /* ==========================================================
    UNIFIED INBOX LIGHT MODE ULTRA-HIGH CONTRAST ENGINE
    ========================================================== */
@@ -873,30 +926,112 @@ html[data-mode="light"] button[onclick*="insertPlaybookReply"]:hover {
     border-color: #8f651a !important;
 }
 
-/* Bottom Composer Controls in Light Mode */
-html[data-mode="light"] #inboxComposer {
+/* Bottom Composer Controls & Card in Light Mode — Completely eliminates black box */
+html[data-mode="light"] #inboxComposerContainer,
+html[data-mode="light"] .inbox-composer-card {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border-top: 1.5px solid rgba(20, 16, 10, 0.14) !important;
+    box-shadow: 0 -4px 20px rgba(20, 16, 10, 0.04) !important;
+}
+
+html[data-mode="light"] .inbox-composer-card .text-\[\#d9b46c\] {
+    color: #8f651a !important;
+    font-weight: 800 !important;
+}
+
+html[data-mode="light"] .inbox-composer-card label,
+html[data-mode="light"] .inbox-composer-card .text-\[\#a3a6b0\] {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+}
+
+html[data-mode="light"] .chat-timeline-container,
+html[data-mode="light"] #chatTimeline {
+    background-color: #f7f4ec !important;
+    border: 1px solid rgba(20, 16, 10, 0.12) !important;
+}
+
+/* Playbook chips in Light Mode */
+html[data-mode="light"] .inbox-playbook-chip {
+    background-color: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-mode="light"] .inbox-playbook-chip:hover {
+    background-color: #f8fafc !important;
+    border-color: #8f651a !important;
+    transform: translateY(-1px);
+}
+
+/* Composer Textarea in Light Mode */
+html[data-mode="light"] #inboxComposer,
+html[data-mode="light"] .inbox-composer-textarea {
     background-color: #ffffff !important;
     color: #0f1117 !important;
     font-weight: 600 !important;
     border: 1.5px solid #cbd5e1 !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
 
-html[data-mode="light"] #inboxComposer::placeholder {
+html[data-mode="light"] #inboxComposer::placeholder,
+html[data-mode="light"] .inbox-composer-textarea::placeholder {
     color: #64748b !important;
+    opacity: 1 !important;
 }
 
-html[data-mode="light"] #inboxChannelSelect {
+html[data-mode="light"] #inboxComposer:focus,
+html[data-mode="light"] .inbox-composer-textarea:focus {
+    border-color: #8f651a !important;
+    box-shadow: 0 0 0 3px rgba(143, 101, 26, 0.15) !important;
+    outline: none !important;
+}
+
+/* Channel Select dropdown in Light Mode */
+html[data-mode="light"] #inboxChannelSelect,
+html[data-mode="light"] .inbox-channel-select {
     background-color: #ffffff !important;
     color: #0f1117 !important;
     font-weight: 700 !important;
     border: 1.5px solid #cbd5e1 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
+/* Draft button in Light Mode */
+html[data-mode="light"] .inbox-draft-btn,
 html[data-mode="light"] button[onclick="openInExternalApp()"] {
     background-color: #ffffff !important;
     color: #0f1117 !important;
-    font-weight: 700 !important;
+    font-weight: 800 !important;
     border: 1.5px solid #cbd5e1 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-mode="light"] .inbox-draft-btn:hover,
+html[data-mode="light"] button[onclick="openInExternalApp()"]:hover {
+    background-color: #f8fafc !important;
+    border-color: #8f651a !important;
+}
+
+/* Ready for Direct Outreach Card in Light Mode */
+html[data-mode="light"] .inbox-ready-card {
+    background-color: #ffffff !important;
+    border: 1.5px solid #d9b46c !important;
+    box-shadow: 0 4px 20px rgba(180, 140, 40, 0.12) !important;
+}
+
+html[data-mode="light"] .inbox-ready-card h4 {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    font-size: 14px !important;
+}
+
+html[data-mode="light"] .inbox-ready-card p {
+    color: #334155 !important;
+    font-weight: 600 !important;
 }
 
 /* External Jump Buttons in Prospect Header */

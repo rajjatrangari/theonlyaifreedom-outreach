@@ -82,8 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/assets/css/app.css?v=8">
-    <script src="/assets/js/theme.js?v=8"></script>
+    <link rel="stylesheet" href="/assets/css/app.css?v=9">
+    <script src="/assets/js/theme.js?v=9"></script>
 </head>
 <body class="h-full flex items-center justify-center p-4 font-sans">
     
