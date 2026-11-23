@@ -531,6 +531,41 @@ function migrate_database(PDO $pdo, string $driver): void {
         $pdo->exec("UPDATE connected_channels SET account_identifier = 'rajjat@theonlyaifreedom.in' WHERE channel_name = 'email' AND (account_identifier = 'outreach@theonlyaifreedom.in' OR account_identifier = '' OR account_identifier = 'unconfigured')");
     } catch (Throwable $e) {}
 
+    // Sanitize and repair all existing leads' social URLs to point directly to decision makers and active endpoints
+    try {
+        $leadsToFix = $pdo->query("SELECT id, business_name, decision_maker_name, city, linkedin_url, instagram_url, youtube_url, facebook_url FROM leads")->fetchAll(PDO::FETCH_ASSOC);
+        $upStmt = $pdo->prepare("UPDATE leads SET linkedin_url = ?, decision_maker_linkedin = ?, instagram_url = ?, youtube_url = ?, facebook_url = ? WHERE id = ?");
+        foreach ($leadsToFix as $lf) {
+            $dm = !empty($lf['decision_maker_name']) ? $lf['decision_maker_name'] : 'Director';
+            $bn = $lf['business_name'];
+            $ct = !empty($lf['city']) ? $lf['city'] : 'India';
+
+            // Direct decision maker LinkedIn people search
+            $cleanDmLi = 'https://www.linkedin.com/search/results/people/?keywords=' . urlencode("{$dm} {$bn}");
+
+            // Fix Instagram
+            $cleanSlug = preg_replace('/[^a-z0-9]/', '', strtolower($bn));
+            $ig = $lf['instagram_url'];
+            if (empty($ig) || strpos($ig, 'restige') !== false || strpos($ig, 'unavailable') !== false) {
+                $ig = "https://www.instagram.com/explore/tags/{$cleanSlug}/";
+            }
+
+            // Fix YouTube
+            $yt = $lf['youtube_url'];
+            if (empty($yt) || strpos($yt, '@restige') !== false || strpos($yt, 'unavailable') !== false || strpos($yt, '@') !== false) {
+                $yt = 'https://www.youtube.com/results?search_query=' . urlencode("{$bn} {$ct}");
+            }
+
+            // Fix Facebook / Meta Ad Library
+            $fb = $lf['facebook_url'];
+            if (empty($fb) || strpos($fb, 'restige') !== false || strpos($fb, 'unavailable') !== false) {
+                $fb = 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=' . urlencode($bn);
+            }
+
+            $upStmt->execute([$cleanDmLi, $cleanDmLi, $ig, $yt, $fb, $lf['id']]);
+        }
+    } catch (Throwable $e) {}
+
     seed_default_admin($pdo);
 }
 

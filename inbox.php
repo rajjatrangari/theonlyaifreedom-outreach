@@ -348,25 +348,29 @@ ob_start();
                                 </a>
                             <?php endif; ?>
 
-                            <?php if (!empty($selectedLead['linkedin_url'])): ?>
-                                <a href="<?= h($selectedLead['linkedin_url']) ?>" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 text-xs font-semibold border border-blue-500/30 flex items-center gap-1.5 transition" title="Open LinkedIn Profile">
-                                    <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 fill-current text-[#0A66C2]">
-                                        <path d="M19 3A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19M18.5 18.5V13.2A3.26 3.26 0 0 0 15.24 9.94C14.39 9.94 13.4 10.46 12.92 11.24V10.13H10.13V18.5H12.92V13.57C12.92 12.8 13.54 12.17 14.31 12.17A1.4 1.4 0 0 1 15.71 13.57V18.5H18.5M6.88 8.56A1.68 1.68 0 0 0 8.56 6.88C8.56 5.95 7.81 5.19 6.88 5.19A1.69 1.69 0 0 0 5.19 6.88C5.19 7.81 5.95 8.56 6.88 8.56M8.27 18.5V10.13H5.5V18.5H8.27Z"/>
-                                    </svg>
-                                    <span>LinkedIn</span>
-                                    <i data-lucide="external-link" class="w-3 h-3 opacity-60"></i>
-                                </a>
-                            <?php endif; ?>
+                            <?php 
+                                $dmLiTarget = !empty($selectedLead['decision_maker_linkedin']) ? $selectedLead['decision_maker_linkedin'] : ($selectedLead['linkedin_url'] ?? '');
+                                if (empty($dmLiTarget) || strpos($dmLiTarget, '/company/') !== false || strpos($dmLiTarget, 'unavailable') !== false) {
+                                    $dmLiTarget = 'https://www.linkedin.com/search/results/people/?keywords=' . urlencode(($selectedLead['decision_maker_name'] ?: 'Founder') . ' ' . $selectedLead['business_name']);
+                                }
+                                $cleanSlugIb = preg_replace('/[^a-z0-9]/', '', strtolower($selectedLead['business_name']));
+                                $igTarget = (!empty($selectedLead['instagram_url']) && strpos($selectedLead['instagram_url'], 'restige') === false) ? $selectedLead['instagram_url'] : "https://www.instagram.com/explore/tags/{$cleanSlugIb}/";
+                            ?>
+                            <a href="<?= h($dmLiTarget) ?>" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 text-xs font-semibold border border-blue-500/30 flex items-center gap-1.5 transition" title="LinkedIn: Direct Profile & Message for <?= h($selectedLead['decision_maker_name'] ?: 'Decision Maker') ?>">
+                                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 fill-[#0A66C2]">
+                                    <path d="M19 3A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19M18.5 18.5V13.2A3.26 3.26 0 0 0 15.24 9.94C14.39 9.94 13.4 10.46 12.92 11.24V10.13H10.13V18.5H12.92V13.57C12.92 12.8 13.54 12.17 14.31 12.17A1.4 1.4 0 0 1 15.71 13.57V18.5H18.5M6.88 8.56A1.68 1.68 0 0 0 8.56 6.88C8.56 5.95 7.81 5.19 6.88 5.19A1.69 1.69 0 0 0 5.19 6.88C5.19 7.81 5.95 8.56 6.88 8.56M8.27 18.5V10.13H5.5V18.5H8.27Z"/>
+                                </svg>
+                                <span>LinkedIn DM</span>
+                                <i data-lucide="external-link" class="w-3 h-3 opacity-60"></i>
+                            </a>
 
-                            <?php if (!empty($selectedLead['instagram_url'])): ?>
-                                <a href="<?= h($selectedLead['instagram_url']) ?>" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 text-pink-400 text-xs font-semibold border border-pink-500/30 flex items-center gap-1.5 transition" title="Open Instagram DM">
-                                    <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 fill-current text-[#E4405F]">
-                                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                                    </svg>
-                                    <span>Instagram</span>
-                                    <i data-lucide="external-link" class="w-3 h-3 opacity-60"></i>
-                                </a>
-                            <?php endif; ?>
+                            <a href="<?= h($igTarget) ?>" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 text-pink-400 text-xs font-semibold border border-pink-500/30 flex items-center gap-1.5 transition" title="Instagram: Explore & Posts (<?= h($selectedLead['business_name']) ?>)">
+                                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 fill-[#E4405F]">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                </svg>
+                                <span>Instagram</span>
+                                <i data-lucide="external-link" class="w-3 h-3 opacity-60"></i>
+                            </a>
 
                             <?php if (!empty($selectedLead['website'])): ?>
                                 <a href="<?= h($selectedLead['website']) ?>" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-[#f4f1ea] text-xs font-semibold border border-white/[0.1] flex items-center gap-1.5 transition" title="Visit Live Corporate Website">

@@ -179,24 +179,24 @@ ob_start();
                                     <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
                                 </a>
                             <?php endif; ?>
-                            <?php if (!empty($lead['linkedin_url'])): ?>
-                                <a href="<?= h($lead['linkedin_url']) ?>" target="_blank" class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20" title="LinkedIn Profile">
-                                    <i data-lucide="linkedin" class="w-3.5 h-3.5"></i>
-                                </a>
-                            <?php endif; ?>
-                            <?php if (!empty($lead['instagram_url'])): ?>
-                                <a href="<?= h($lead['instagram_url']) ?>" target="_blank" class="p-1.5 rounded-lg bg-pink-500/10 text-pink-400 hover:bg-pink-500/20 border border-pink-500/20" title="Instagram Profile">
-                                    <i data-lucide="instagram" class="w-3.5 h-3.5"></i>
-                                </a>
-                            <?php endif; ?>
-                            <?php if (!empty($lead['youtube_url'])): ?>
-                                <a href="<?= h($lead['youtube_url']) ?>" target="_blank" class="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20" title="YouTube Channel">
-                                    <i data-lucide="youtube" class="w-3.5 h-3.5"></i>
-                                </a>
-                            <?php endif; ?>
+                            <?php 
+                                $outLiUrl = !empty($lead['decision_maker_linkedin']) ? $lead['decision_maker_linkedin'] : ($lead['linkedin_url'] ?: ('https://www.linkedin.com/search/results/people/?keywords=' . urlencode(($lead['decision_maker_name'] ?: 'Founder') . ' ' . $lead['business_name'])));
+                                $cleanSlugOut = preg_replace('/[^a-z0-9]/', '', strtolower($lead['business_name']));
+                                $outIgUrl = (!empty($lead['instagram_url']) && strpos($lead['instagram_url'], 'restige') === false) ? $lead['instagram_url'] : ("https://www.instagram.com/explore/tags/{$cleanSlugOut}/");
+                                $outYtUrl = (!empty($lead['youtube_url']) && strpos($lead['youtube_url'], '@') === false) ? $lead['youtube_url'] : ('https://www.youtube.com/results?search_query=' . urlencode($lead['business_name'] . ' ' . $lead['city']));
+                            ?>
+                            <a href="<?= h($outLiUrl) ?>" target="_blank" class="w-6 h-6 rounded-lg bg-[#0A66C2]/15 hover:bg-[#0A66C2]/25 border border-[#0A66C2]/40 social-icon-btn flex items-center justify-center transition transform hover:scale-110" title="LinkedIn: Direct Profile & Message (<?= h($lead['decision_maker_name'] ?: 'Decision Maker') ?>)">
+                                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 fill-[#0A66C2]"><path d="M19 3A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19M18.5 18.5V13.2A3.26 3.26 0 0 0 15.24 9.94C14.39 9.94 13.4 10.46 12.92 11.24V10.13H10.13V18.5H12.92V13.57C12.92 12.8 13.54 12.17 14.31 12.17A1.4 1.4 0 0 1 15.71 13.57V18.5H18.5M6.88 8.56A1.68 1.68 0 0 0 8.56 6.88C8.56 5.95 7.81 5.19 6.88 5.19A1.69 1.69 0 0 0 5.19 6.88C5.19 7.81 5.95 8.56 6.88 8.56M8.27 18.5V10.13H5.5V18.5H8.27Z"/></svg>
+                            </a>
+                            <a href="<?= h($outIgUrl) ?>" target="_blank" class="w-6 h-6 rounded-lg bg-[#E4405F]/15 hover:bg-[#E4405F]/25 border border-[#E4405F]/40 social-icon-btn flex items-center justify-center transition transform hover:scale-110" title="Instagram: Explore & Posts">
+                                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 fill-[#E4405F]"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                            </a>
+                            <a href="<?= h($outYtUrl) ?>" target="_blank" class="w-6 h-6 rounded-lg bg-[#FF0000]/15 hover:bg-[#FF0000]/25 border border-[#FF0000]/40 social-icon-btn flex items-center justify-center transition transform hover:scale-110" title="YouTube: Video Showcase">
+                                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 fill-[#FF0000]"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                            </a>
                             <?php if (!empty($lead['email'])): ?>
-                                <a href="mailto:<?= h($lead['email']) ?>" class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20" title="Email: <?= h($lead['email']) ?>">
-                                    <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+                                <a href="mailto:<?= h($lead['email']) ?>" class="w-6 h-6 rounded-lg bg-[#818cf8]/15 hover:bg-[#818cf8]/25 border border-[#818cf8]/40 social-icon-btn flex items-center justify-center transition transform hover:scale-110" title="Email: <?= h($lead['email']) ?>">
+                                    <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 fill-[#818cf8]"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
                                 </a>
                             <?php endif; ?>
                             
