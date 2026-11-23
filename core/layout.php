@@ -222,7 +222,7 @@ function render_layout(string $title, string $activePage, string $content, ?arra
     <!-- Notification Toast -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <script src="/assets/js/app.js?v=6"></script>
+    <script src="/assets/js/app.js?v=7"></script>
     <script>
         lucide.createIcons();
         function toggleSidebar() {

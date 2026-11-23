@@ -89,7 +89,7 @@ switch ($action) {
         ]);
         break;
 
-    // 3. Record Outreach Dispatch & Update Pipeline
+    // 3. Record Outreach Dispatch & Update Pipeline (With Direct Cloud API / SMTP Transmission)
     case 'record_outreach':
         $leadId = (int)($input['lead_id'] ?? 0);
         $channel = trim($input['channel'] ?? 'whatsapp');
@@ -113,28 +113,85 @@ switch ($action) {
 
         $nextFollowup = date('Y-m-d', strtotime('+3 days'));
 
-        // Log outreach touchpoint
-        q("INSERT INTO outreach_logs (lead_id, user_id, channel, touch_type, message_sent, outcome, created_at)
-           VALUES (?, ?, ?, ?, ?, 'sent', ?)", [
+        $cloudSent = false;
+        $metaMsgId = null;
+        $metaNotice = null;
+
+        // 1. Direct In-Platform WhatsApp Cloud API Transmission
+        if ($channel === 'whatsapp') {
+            $ch = one("SELECT config_data FROM connected_channels WHERE user_id = ? AND channel_name = 'whatsapp'", [$user['id']]);
+            $waCfg = json_decode($ch['config_data'] ?? '{}', true) ?: [];
+            
+            $phoneId = trim($waCfg['phone_number_id'] ?? '');
+            $token = trim($waCfg['access_token'] ?? '');
+            $targetPhone = $lead['decision_maker_phone'] ?: ($lead['whatsapp'] ?: $lead['phone']);
+
+            if (!empty($phoneId) && !empty($token) && !empty($targetPhone)) {
+                $cloudRes = WhatsAppService::sendCloudMessage($phoneId, $token, $targetPhone, $message);
+                if ($cloudRes['status'] === 'success') {
+                    $cloudSent = true;
+                    $metaMsgId = $cloudRes['wamid'] ?? null;
+                } else {
+                    $metaNotice = $cloudRes['message'] ?? 'Meta API notice';
+                }
+            } else if (empty($phoneId) || empty($token)) {
+                $metaNotice = "Meta Cloud API credentials not configured; recorded to CRM timeline.";
+            }
+        }
+
+        // 2. Direct In-Platform Corporate Email Transmission
+        if ($channel === 'email') {
+            $ch = one("SELECT config_data FROM connected_channels WHERE user_id = ? AND channel_name = 'email'", [$user['id']]);
+            $emCfg = json_decode($ch['config_data'] ?? '{}', true) ?: [];
+            
+            $targetEmail = $lead['decision_maker_email'] ?: $lead['email'];
+            if (!empty($targetEmail)) {
+                $subj = trim($input['subject'] ?? '') ?: ("Strategic Automation for " . ($lead['decision_maker_name'] ?: $lead['business_name']));
+                $mailRes = EmailService::sendEmail($targetEmail, $subj, $message, [
+                    'sender_email' => $user['sender_email'] ?: ($emCfg['sender_email'] ?? 'rajjat@theonlyaifreedom.in'),
+                    'sender_name' => $user['sender_name'] ?: 'Rajjat Rangari | The Only AI Freedom',
+                    'smtp_host' => $emCfg['smtp_host'] ?? 'smtp.hostinger.com',
+                    'smtp_port' => (int)($emCfg['smtp_port'] ?? 465),
+                    'smtp_user' => $emCfg['smtp_user'] ?? '',
+                    'smtp_pass' => $emCfg['smtp_pass'] ?? '',
+                ]);
+                if ($mailRes['status'] === 'success') {
+                    $cloudSent = true;
+                    $metaNotice = $mailRes['message'];
+                } else {
+                    $metaNotice = $mailRes['message'];
+                }
+            }
+        }
+
+        // Log outreach touchpoint with direction & message ID
+        q("INSERT INTO outreach_logs (lead_id, user_id, channel, touch_type, message_sent, outcome, direction, message_id, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, 'outbound', ?, ?)", [
             $leadId,
             $user['id'],
             $channel,
             $touchType,
             $message,
+            $cloudSent ? 'delivered' : 'sent',
+            $metaMsgId,
             now()
         ]);
 
-        // Update lead status
+        $logId = last_id();
+
+        // Update lead status, timestamp, and activity in CRM pipeline
         q("UPDATE leads SET
             pipeline_stage = ?,
             last_contacted_at = ?,
             last_channel = ?,
+            last_activity_at = ?,
             next_followup_at = ?,
             updated_at = ?
            WHERE id = ? AND user_id = ?", [
             $newStage,
             now(),
             $channel,
+            now(),
             $nextFollowup,
             now(),
             $leadId,
@@ -144,8 +201,16 @@ switch ($action) {
         json_response([
             'status' => 'success',
             'lead_id' => $leadId,
+            'log_id' => $logId,
+            'channel' => $channel,
             'stage' => $newStage,
-            'next_followup' => $nextFollowup
+            'next_followup' => $nextFollowup,
+            'cloud_sent' => $cloudSent,
+            'meta_wamid' => $metaMsgId,
+            'meta_notice' => $metaNotice,
+            'message' => $cloudSent
+                ? ($channel === 'whatsapp' ? 'Delivered directly to decision maker via Meta WhatsApp Cloud API!' : 'Delivered directly via Corporate Email!')
+                : ($metaNotice ?: 'Outreach dispatched & lead tracked in CRM Pipeline.')
         ]);
         break;
 

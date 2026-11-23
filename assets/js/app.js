@@ -297,17 +297,22 @@ function renderOutreachModalContent(lead, sequence, activeChannel) {
             </div>
         </div>
 
-        <div class="p-5 border-t border-white/[0.08] bg-slate-900/60 flex items-center justify-between">
-            <div class="text-xs text-slate-400">
-                Clicking dispatch copies script, opens channel & logs to <strong>CRM Pipeline</strong>.
+        <div class="p-5 border-t border-white/[0.08] bg-slate-900/60 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-slate-400">
+                    Sends in-platform via Cloud API &amp; updates <strong>CRM Pipeline</strong>.
+                </span>
+                <button type="button" onclick="openChannelExternal()" class="text-[11px] text-[#d9b46c] hover:underline font-bold flex items-center gap-1" title="Only if you prefer manual WhatsApp Web">
+                    <span>or Open Web App ↗</span>
+                </button>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
                 <button type="button" onclick="closeModal()" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition">
                     Cancel
                 </button>
-                <button type="button" onclick="dispatchOutreach(${lead.id})" class="btn-gold-cta px-5 py-2.5 rounded-xl text-xs font-extrabold text-black shadow-lg transition flex items-center gap-2">
-                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
-                    <span>Open & Dispatch</span>
+                <button type="button" id="btnModalDispatch" onclick="dispatchOutreach(${lead.id})" class="btn-gold-cta px-5 py-2.5 rounded-xl text-xs font-extrabold text-black shadow-lg transition flex items-center gap-2">
+                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                    <span>Send Directly Now (In-Platform)</span>
                 </button>
             </div>
         </div>
@@ -490,7 +495,36 @@ function copyMessageText() {
     });
 }
 
-// Open channel directly & log to CRM pipeline
+// Open channel externally (Only if user explicitly clicks "or Open Web App ↗")
+function openChannelExternal() {
+    const state = window.__currentOutreach;
+    if (!state) return;
+    const textarea = document.getElementById('outreachMessageText');
+    const message = textarea ? textarea.value : '';
+    const lead = state.lead;
+    const channel = state.channel;
+
+    if (channel === 'whatsapp') {
+        const rawPhone = lead.decision_maker_phone || lead.whatsapp || lead.phone;
+        const clean = (rawPhone || '').replace(/[^\d]/g, '');
+        if (clean) {
+            window.open(`https://wa.me/${clean}?text=${encodeURIComponent(message)}`, '_blank');
+            showToast('WhatsApp external tab opened! Dispatch can also be logged directly.', 'info');
+        } else {
+            showToast('No valid WhatsApp number found.', 'error');
+        }
+    } else if (channel === 'linkedin') {
+        const liUrl = lead.decision_maker_linkedin || lead.linkedin_url;
+        if (liUrl) window.open(liUrl, '_blank');
+    } else if (channel === 'instagram') {
+        if (lead.instagram_url) window.open(lead.instagram_url, '_blank');
+    } else if (channel === 'email') {
+        const email = lead.decision_maker_email || lead.email;
+        if (email) window.open(`mailto:${email}?body=${encodeURIComponent(message)}`, '_blank');
+    }
+}
+
+// 100% IN-PLATFORM DIRECT DISPATCH ENGINE (NO TAB REDIRECT)
 async function dispatchOutreach(leadId) {
     const state = window.__currentOutreach;
     if (!state) return;
@@ -501,52 +535,14 @@ async function dispatchOutreach(leadId) {
     const channel = state.channel;
     const mode = state.mode || 'cadence';
     const touchType = mode === 'playbook' ? `playbook_${state.scenario}` : state.touchType;
-    const targetStage = mode === 'playbook' ? 'responded' : 'outreach_sent';
+    const subject = document.getElementById('emailSubjectInput')?.value || '';
 
-    // Automatically copy message to clipboard so user has it ready
-    if (message) {
-        navigator.clipboard.writeText(message).catch(() => {});
+    const btn = document.getElementById('btnModalDispatch');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="animate-spin w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full"></span><span>Sending Directly...</span>`;
     }
 
-    // 1. Open target channel directly to the Decision Maker
-    if (channel === 'whatsapp') {
-        const rawPhone = lead.decision_maker_phone || lead.whatsapp || lead.phone;
-        const clean = (rawPhone || '').replace(/[^\d]/g, '');
-        if (clean) {
-            window.open(`https://wa.me/${clean}?text=${encodeURIComponent(message)}`, '_blank');
-        } else {
-            showToast('No valid WhatsApp number found for this prospect.', 'error');
-            return;
-        }
-    } else if (channel === 'linkedin') {
-        const liUrl = lead.decision_maker_linkedin || lead.linkedin_url;
-        if (liUrl) {
-            window.open(liUrl, '_blank');
-            showToast('LinkedIn decision maker profile opened! Script copied to clipboard.', 'success');
-        } else {
-            showToast('No LinkedIn profile found for this prospect.', 'error');
-            return;
-        }
-    } else if (channel === 'email') {
-        const email = lead.decision_maker_email || lead.email;
-        const subject = document.getElementById('emailSubjectInput')?.value || `Direct note for ${lead.decision_maker_name || lead.business_name}`;
-        if (email) {
-            window.open(`mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`, '_blank');
-        } else {
-            showToast('No verified corporate email found for this prospect.', 'error');
-            return;
-        }
-    } else if (channel === 'instagram') {
-        if (lead.instagram_url) {
-            window.open(lead.instagram_url, '_blank');
-            showToast('Instagram profile opened! Script copied to clipboard.', 'success');
-        } else {
-            showToast('No Instagram URL for this lead.', 'error');
-            return;
-        }
-    }
-
-    // 2. Log touchpoint to CRM and update stage
     try {
         const res = await fetch('/api.php?action=record_outreach', {
             method: 'POST',
@@ -555,22 +551,44 @@ async function dispatchOutreach(leadId) {
                 lead_id: leadId,
                 channel: channel,
                 touch_type: touchType,
-                message: message
+                message: message,
+                subject: subject
             })
         });
         const resData = await res.json();
         if (resData.status === 'success') {
-            showToast('Outreach dispatched & lead moved to Outreach Sent in CRM! 🚀', 'success');
+            const recipientName = lead.decision_maker_name || lead.business_name || 'prospect';
+            const successMsg = resData.cloud_sent
+                ? `✓ Delivered directly to ${recipientName} via Meta WhatsApp Cloud API!`
+                : (resData.message || 'Outreach dispatched & lead moved to Outreach Sent in CRM! 🚀');
+
+            showToast(successMsg, 'success');
             closeModal();
-            // If on CRM page, refresh Kanban column
+
+            // Real-time UI refresh
             if (typeof refreshKanban === 'function') {
                 refreshKanban();
+            } else if (typeof loadSavedLeads === 'function') {
+                loadSavedLeads();
             } else {
-                setTimeout(() => location.reload(), 1200);
+                setTimeout(() => location.reload(), 1000);
+            }
+        } else {
+            showToast(resData.message || 'Dispatch failed', 'error');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="zap" class="w-3.5 h-3.5"></i><span>Send Directly Now (In-Platform)</span>`;
+                lucide.createIcons();
             }
         }
     } catch (err) {
         console.error('Record outreach err:', err);
+        showToast('Network error during in-platform dispatch', 'error');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="zap" class="w-3.5 h-3.5"></i><span>Send Directly Now (In-Platform)</span>`;
+            lucide.createIcons();
+        }
     }
 }
 
