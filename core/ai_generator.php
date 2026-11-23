@@ -43,6 +43,7 @@ class AIGenerator {
         $myUsp = !empty($user['usp_hook']) ? $user['usp_hook'] : 'We deploy a dedicated lead conversion system live in 7 days.';
         $senderPhone = $user['sender_whatsapp'] ?: ($user['sender_phone'] ?: '+917620654814');
         $senderEmail = $user['sender_email'] ?: ($user['email'] ?: 'outreach@theonlyaifreedom.in');
+        $pricing = !empty($user['business_pricing']) ? $user['business_pricing'] : 'flexible ROI-linked growth packages';
 
         // All languages bundle
         $sequences = [
