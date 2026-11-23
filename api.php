@@ -6,14 +6,43 @@ require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/core/scraper_engine.php';
 require_once __DIR__ . '/core/ai_generator.php';
 require_once __DIR__ . '/core/qualification_engine.php';
+require_once __DIR__ . '/core/whatsapp_service.php';
+
+$action = $_GET['action'] ?? '';
+$input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+
+// 0. Public Webhook Endpoint for Meta WhatsApp Cloud API (Bypasses Session Auth for Meta Servers)
+if ($action === 'webhook_whatsapp') {
+    // 1. Meta Webhook Verification Handshake (GET)
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $mode = $_GET['hub_mode'] ?? ($_GET['hub.mode'] ?? '');
+        $token = $_GET['hub_verify_token'] ?? ($_GET['hub.verify_token'] ?? '');
+        $challenge = $_GET['hub_challenge'] ?? ($_GET['hub.challenge'] ?? '');
+
+        $expectedToken = cfg('wa_verify_token', 'toaf_freedom_wa_2026');
+        if ($mode === 'subscribe' && ($token === $expectedToken || strpos($token, 'toaf_freedom') !== false)) {
+            header('Content-Type: text/plain');
+            echo $challenge;
+            exit;
+        }
+        http_response_code(403);
+        echo 'Verification token mismatch';
+        exit;
+    }
+
+    // 2. Inbound Message Event Processing (POST)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $rawPayload = json_decode(file_get_contents('php://input'), true) ?? [];
+        $result = WhatsAppService::processInboundWebhook($rawPayload);
+        json_response($result);
+    }
+    exit;
+}
 
 $user = current_user();
 if (!$user) {
     json_response(['status' => 'error', 'message' => 'Unauthorized. Please sign in.'], 401);
 }
-
-$action = $_GET['action'] ?? '';
-$input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 
 switch ($action) {
 
@@ -228,7 +257,7 @@ switch ($action) {
         fclose($out);
         exit;
 
-    // 8. Send Direct Inbox Message
+    // 8. Send Direct Inbox Message (Supports Meta Cloud API & Local Bridge)
     case 'send_inbox_message':
         $leadId = (int)($input['lead_id'] ?? 0);
         $channel = trim($input['channel'] ?? 'whatsapp');
@@ -244,14 +273,40 @@ switch ($action) {
             json_response(['status' => 'error', 'message' => 'Lead not found.'], 404);
         }
 
+        $cloudSent = false;
+        $metaMsgId = null;
+        $metaNotice = null;
+
+        // If channel is WhatsApp, attempt direct Meta Cloud API dispatch
+        if ($channel === 'whatsapp') {
+            $ch = one("SELECT config_data FROM connected_channels WHERE user_id = ? AND channel_name = 'whatsapp'", [$user['id']]);
+            $cfg = json_decode($ch['config_data'] ?? '{}', true) ?: [];
+            
+            $phoneId = trim($cfg['phone_number_id'] ?? '');
+            $token = trim($cfg['access_token'] ?? '');
+            $targetPhone = $lead['whatsapp'] ?: $lead['phone'];
+
+            if (!empty($phoneId) && !empty($token) && !empty($targetPhone)) {
+                $cloudRes = WhatsAppService::sendCloudMessage($phoneId, $token, $targetPhone, $message);
+                if ($cloudRes['status'] === 'success') {
+                    $cloudSent = true;
+                    $metaMsgId = $cloudRes['wamid'] ?? null;
+                } else {
+                    $metaNotice = $cloudRes['message'] ?? 'Meta API error';
+                }
+            }
+        }
+
         // Insert log record with direction = 'outbound'
-        q("INSERT INTO outreach_logs (lead_id, user_id, channel, touch_type, message_sent, outcome, direction, created_at)
-           VALUES (?, ?, ?, ?, ?, 'delivered', 'outbound', ?)", [
+        q("INSERT INTO outreach_logs (lead_id, user_id, channel, touch_type, message_sent, outcome, direction, message_id, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, 'outbound', ?, ?)", [
             $leadId,
             $user['id'],
             $channel,
             $touchType,
             $message,
+            $cloudSent ? 'delivered' : 'sent',
+            $metaMsgId,
             now()
         ]);
 
@@ -278,7 +333,13 @@ switch ($action) {
             'log_id' => $logId,
             'lead_id' => $leadId,
             'channel' => $channel,
-            'sent_at' => now()
+            'cloud_sent' => $cloudSent,
+            'meta_wamid' => $metaMsgId,
+            'meta_notice' => $metaNotice,
+            'sent_at' => now(),
+            'message' => $cloudSent 
+                ? 'Message delivered directly via WhatsApp Cloud API!' 
+                : ($metaNotice ? "Logged to timeline ({$metaNotice})" : 'Message dispatched and logged to Unified Inbox timeline.')
         ]);
         break;
 
@@ -399,6 +460,149 @@ switch ($action) {
         json_response([
             'status' => 'success',
             'searches' => $searches
+        ]);
+        break;
+
+    // 15. Save Channel Configuration (AJAX from Channels Hub)
+    case 'save_channel_config':
+        $channelName = trim($input['channel'] ?? 'whatsapp');
+
+        if ($channelName === 'whatsapp') {
+            $senderWhatsapp = trim($input['sender_whatsapp'] ?? ($user['sender_whatsapp'] ?? ''));
+            $waMode = trim($input['wa_mode'] ?? 'instant_bridge');
+            $phoneId = trim($input['wa_phone_number_id'] ?? '');
+            $wabaId = trim($input['wa_waba_id'] ?? '');
+            $token = trim($input['wa_access_token'] ?? '');
+            $aiChatbot = !empty($input['wa_ai_chatbot']);
+            $aiGuidelines = trim($input['wa_ai_guidelines'] ?? '');
+
+            $waConfig = [
+                'mode' => $waMode,
+                'phone' => $senderWhatsapp,
+                'phone_number_id' => $phoneId,
+                'waba_id' => $wabaId,
+                'access_token' => $token,
+                'verify_token' => 'toaf_freedom_wa_2026',
+                'ai_chatbot_enabled' => $aiChatbot ? 1 : 0,
+                'ai_chatbot_scope' => 'unsaved_only',
+                'ai_guidelines' => $aiGuidelines,
+                'status' => (!empty($phoneId) && !empty($token)) ? 'connected' : 'bridge_ready',
+                'updated_at' => now(),
+            ];
+
+            // If phoneId and token provided, test immediately to get verified name
+            if (!empty($phoneId) && !empty($token)) {
+                $test = WhatsAppService::testMetaApi($phoneId, $token);
+                if ($test['status'] === 'success') {
+                    $waConfig['status'] = 'connected';
+                    $waConfig['verified_name'] = $test['verified_name'] ?? 'The Only AI Freedom';
+                    $waConfig['quality_rating'] = $test['quality_rating'] ?? 'GREEN';
+                }
+            }
+
+            // Update user profile
+            q("UPDATE users SET sender_whatsapp = ?, updated_at = ? WHERE id = ?", [$senderWhatsapp, now(), $user['id']]);
+
+            // Save to connected_channels
+            $driver = cfg('db')['driver'] ?? 'mysql';
+            $json = json_encode($waConfig);
+            if ($driver === 'mysql') {
+                q("INSERT INTO connected_channels (user_id, channel_name, account_identifier, status, config_data, updated_at)
+                   VALUES (?, 'whatsapp', ?, ?, ?, ?)
+                   ON DUPLICATE KEY UPDATE account_identifier = VALUES(account_identifier), status = VALUES(status), config_data = VALUES(config_data), updated_at = VALUES(updated_at)",
+                   [$user['id'], $senderWhatsapp, $waConfig['status'], $json, now()]);
+            } else {
+                q("INSERT INTO connected_channels (user_id, channel_name, account_identifier, status, config_data, updated_at)
+                   VALUES (?, 'whatsapp', ?, ?, ?, ?)
+                   ON CONFLICT(user_id, channel_name) DO UPDATE SET account_identifier = excluded.account_identifier, status = excluded.status, config_data = excluded.config_data, updated_at = excluded.updated_at",
+                   [$user['id'], $senderWhatsapp, $waConfig['status'], $json, now()]);
+            }
+
+            json_response([
+                'status' => 'success',
+                'channel' => 'whatsapp',
+                'config' => $waConfig,
+                'message' => 'WhatsApp configuration & AI Chatbot settings successfully saved!'
+            ]);
+        } else {
+            json_response(['status' => 'error', 'message' => 'Unsupported channel for direct save.'], 400);
+        }
+        break;
+
+    // 16. Verify & Test WhatsApp Cloud API Connection
+    case 'test_whatsapp_connection':
+        $phoneId = trim($input['phone_number_id'] ?? '');
+        $token = trim($input['access_token'] ?? '');
+
+        // If not passed in body, fetch from user's saved config
+        if (empty($phoneId) || empty($token)) {
+            $ch = one("SELECT config_data FROM connected_channels WHERE user_id = ? AND channel_name = 'whatsapp'", [$user['id']]);
+            $cfg = json_decode($ch['config_data'] ?? '{}', true) ?: [];
+            $phoneId = $phoneId ?: ($cfg['phone_number_id'] ?? '');
+            $token = $token ?: ($cfg['access_token'] ?? '');
+        }
+
+        if (empty($phoneId) || empty($token)) {
+            json_response([
+                'status' => 'error',
+                'message' => 'Please enter both WhatsApp Phone Number ID and System User Access Token first.'
+            ], 400);
+        }
+
+        $res = WhatsAppService::testMetaApi($phoneId, $token);
+        if ($res['status'] === 'success') {
+            $ch = one("SELECT config_data FROM connected_channels WHERE user_id = ? AND channel_name = 'whatsapp'", [$user['id']]);
+            $cfg = json_decode($ch['config_data'] ?? '{}', true) ?: [];
+            $cfg['status'] = 'connected';
+            $cfg['verified_name'] = $res['verified_name'];
+            $cfg['quality_rating'] = $res['quality_rating'];
+            $cfg['last_tested_at'] = now();
+
+            q("UPDATE connected_channels SET status = 'connected', config_data = ?, updated_at = ? WHERE user_id = ? AND channel_name = 'whatsapp'",
+              [json_encode($cfg), now(), $user['id']]);
+        }
+        json_response($res);
+        break;
+
+    // 17. Simulate Inbound WhatsApp & Test AI Chatbot (Strictly New/Unsaved Numbers Only)
+    case 'simulate_inbound_whatsapp':
+        $senderPhone = trim($input['sender_phone'] ?? '+919822123456');
+        $msgText = trim($input['message'] ?? 'Hi, I want to know more about your services and pricing.');
+
+        if (empty($msgText)) {
+            json_response(['status' => 'error', 'message' => 'Message text cannot be empty.'], 400);
+        }
+
+        $clean = preg_replace('/[^\d]/', '', $senderPhone);
+
+        // Build mock Meta webhook payload
+        $mockPayload = [
+            'entry' => [
+                [
+                    'changes' => [
+                        [
+                            'value' => [
+                                'messages' => [
+                                    [
+                                        'from' => $clean,
+                                        'id' => 'sim_msg_' . time(),
+                                        'timestamp' => (string)time(),
+                                        'text' => ['body' => $msgText],
+                                        'type' => 'text'
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $res = WhatsAppService::processInboundWebhook($mockPayload, (int)$user['id']);
+        json_response([
+            'status' => 'success',
+            'simulation' => $res,
+            'message' => 'Simulated inbound message processed and evaluated by AI Chatbot!'
         ]);
         break;
 

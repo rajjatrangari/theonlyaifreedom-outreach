@@ -488,6 +488,7 @@ function migrate_database(PDO $pdo, string $driver): void {
         "ALTER TABLE leads ADD COLUMN last_reply_message TEXT",
         "ALTER TABLE leads ADD COLUMN last_reply_channel VARCHAR(50) DEFAULT ''",
         "ALTER TABLE outreach_logs ADD COLUMN direction VARCHAR(20) DEFAULT 'outbound'",
+        "ALTER TABLE outreach_logs ADD COLUMN message_id VARCHAR(100) DEFAULT NULL",
     ] : [
         "ALTER TABLE leads ADD COLUMN youtube_url TEXT DEFAULT ''",
         "ALTER TABLE leads ADD COLUMN decision_maker_name TEXT DEFAULT ''",
@@ -510,6 +511,7 @@ function migrate_database(PDO $pdo, string $driver): void {
         "ALTER TABLE leads ADD COLUMN last_reply_message TEXT",
         "ALTER TABLE leads ADD COLUMN last_reply_channel TEXT DEFAULT ''",
         "ALTER TABLE outreach_logs ADD COLUMN direction TEXT DEFAULT 'outbound'",
+        "ALTER TABLE outreach_logs ADD COLUMN message_id TEXT DEFAULT NULL",
     ];
 
     foreach ($migrationCols as $colSql) {

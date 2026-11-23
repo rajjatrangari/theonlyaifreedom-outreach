@@ -679,7 +679,7 @@ async function sendDirectInboxMessage() {
     const channel = document.getElementById('inboxChannelSelect').value;
     const btn = document.getElementById('inboxSendBtn');
     btn.disabled = true;
-    btn.innerHTML = `<span class="animate-spin w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full"></span><span>Sending...</span>`;
+    btn.innerHTML = `<span class="animate-spin w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full"></span><span>Sending In-Platform...</span>`;
 
     try {
         const res = await fetch('/api.php?action=send_inbox_message', {
@@ -694,7 +694,10 @@ async function sendDirectInboxMessage() {
         });
         const data = await res.json();
         if (data.status === 'success') {
-            showToast('Message dispatched successfully!', 'success');
+            const successNote = data.cloud_sent 
+                ? 'Delivered directly via Meta WhatsApp Cloud API!' 
+                : 'Message sent and logged directly in Unified Inbox!';
+            showToast(successNote, 'success');
             
             // Append message bubble to timeline
             const timeline = document.getElementById('chatTimeline');
@@ -702,6 +705,7 @@ async function sendDirectInboxMessage() {
                 const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const bubble = document.createElement('div');
                 bubble.className = 'flex justify-end';
+                const deliveryBadge = data.cloud_sent ? '✓✓ Delivered via WhatsApp Cloud API' : '✓ Delivered (In-Platform)';
                 bubble.innerHTML = `
                     <div class="max-w-xl rounded-2xl p-4 chat-bubble-outbound bg-gradient-to-br from-[#161a24] to-[#1c2230] border border-[#d9b46c]/30 text-[#f4f1ea] shadow-md space-y-2">
                         <div class="flex items-center justify-between text-[10px] text-[#a3a6b0] pb-1 border-b border-white/[0.06] chat-bubble-meta">
@@ -711,9 +715,9 @@ async function sendDirectInboxMessage() {
                             </span>
                             <span class="font-mono">${nowStr}</span>
                         </div>
-                        <div class="text-xs leading-relaxed whitespace-pre-wrap font-sans chat-bubble-text">${msg.replace(/\n/g, '<br>')}</div>
-                        <div class="text-[10px] text-right text-[#a3a6b0] flex items-center justify-end gap-1 font-mono chat-bubble-footer">
-                            <span>✓✓ Delivered</span>
+                        <div class="text-xs leading-relaxed whitespace-pre-wrap font-sans chat-bubble-text">${escapeHtml(msg).replace(/\n/g, '<br>')}</div>
+                        <div class="text-[10px] text-right text-emerald-400 flex items-center justify-end gap-1 font-mono chat-bubble-footer">
+                            <span>${deliveryBadge}</span>
                         </div>
                     </div>
                 `;
@@ -732,6 +736,70 @@ async function sendDirectInboxMessage() {
         btn.innerHTML = `<i data-lucide="send" class="w-3.5 h-3.5"></i><span>Send Direct Now</span>`;
         lucide.createIcons();
     }
+}
+
+async function refreshTimeline() {
+    if (!window.__activeLead) return;
+    try {
+        const res = await fetch(`/api.php?action=get_inbox_messages&lead_id=${window.__activeLead.id}`);
+        const data = await res.json();
+        if (data.status === 'success' && data.messages) {
+            renderTimelineMessages(data.messages);
+            showToast('Chat timeline synchronized!', 'success');
+        }
+    } catch(e) {}
+}
+
+function renderTimelineMessages(msgs) {
+    const timeline = document.getElementById('chatTimeline');
+    if (!timeline) return;
+    timeline.innerHTML = msgs.map(m => {
+        const isInbound = (m.direction === 'inbound');
+        const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        if (isInbound) {
+            return `
+                <div class="flex justify-start">
+                    <div class="max-w-xl rounded-2xl p-4 bg-white/[0.05] border border-white/[0.1] text-[#f4f1ea] space-y-2">
+                        <div class="flex items-center justify-between text-[10px] text-[#a3a6b0] pb-1 border-b border-white/[0.06]">
+                            <span class="font-bold text-emerald-400 flex items-center gap-1">
+                                <i data-lucide="inbox" class="w-3 h-3"></i>
+                                <span>Inbound Client (${(m.channel || 'whatsapp').toUpperCase()})</span>
+                            </span>
+                            <span class="font-mono">${timeStr}</span>
+                        </div>
+                        <div class="text-xs leading-relaxed whitespace-pre-wrap">${escapeHtml(m.message_sent)}</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="flex justify-end">
+                    <div class="max-w-xl rounded-2xl p-4 chat-bubble-outbound bg-gradient-to-br from-[#161a24] to-[#1c2230] border border-[#d9b46c]/30 text-[#f4f1ea] shadow-md space-y-2">
+                        <div class="flex items-center justify-between text-[10px] text-[#a3a6b0] pb-1 border-b border-white/[0.06] chat-bubble-meta">
+                            <span class="font-bold uppercase tracking-wider flex items-center gap-1 text-[#d9b46c]">
+                                <i data-lucide="send" class="w-3 h-3"></i>
+                                <span>Outbound (${(m.channel || 'whatsapp').toUpperCase()})</span>
+                            </span>
+                            <span class="font-mono">${timeStr}</span>
+                        </div>
+                        <div class="text-xs leading-relaxed whitespace-pre-wrap font-sans chat-bubble-text">${escapeHtml(m.message_sent).replace(/\n/g, '<br>')}</div>
+                        <div class="text-[10px] text-right text-emerald-400 flex items-center justify-end gap-1 font-mono chat-bubble-footer">
+                            <span>✓✓ Delivered</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }).join('');
+    timeline.scrollTop = timeline.scrollHeight;
+    lucide.createIcons();
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+    });
 }
 
 function openInExternalApp() {

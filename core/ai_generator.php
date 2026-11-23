@@ -345,7 +345,6 @@ class AIGenerator {
             'business_name' => $businessName,
             'decision_maker_name' => $dmFullName ?: 'Founder & Managing Director',
             'decision_maker_title' => $dmTitle,
-            'city' => $city,
             'active_language' => $activeLang,
             'available_languages' => [
                 'en' => 'English',
@@ -359,6 +358,83 @@ class AIGenerator {
             'instagram' => $activePack['instagram'],
             'playbook' => $activePack['playbook'],
             'all_languages' => $sequences,
+        ];
+    }
+
+    /**
+     * AI Chatbot Inbound Understanding & Auto-Reply Engine.
+     * Analyzes incoming message context, intent, and language.
+     * Crafts a natural, human-like, high-converting response based on user offering.
+     */
+    public static function generateInboundReply(array $user, string $message, string $senderPhone = ''): array {
+        $msg = trim($message);
+        $lower = strtolower($msg);
+
+        $senderName = !empty($user['sender_name']) ? $user['sender_name'] : (!empty($user['name']) ? $user['name'] : 'Rajjat Rangari');
+        $myBusiness = !empty($user['business_name']) ? $user['business_name'] : 'The Only AI Freedom';
+        $offering = !empty($user['business_offering']) ? $user['business_offering'] : 'custom AI client acquisition workflows and high-converting marketing automation';
+        $usp = !empty($user['usp_hook']) ? $user['usp_hook'] : 'We deploy live ROI-backed conversion engines in 7 days.';
+        $pricing = !empty($user['business_pricing']) ? $user['business_pricing'] : 'flexible packages starting from ₹49,999 linked directly to lead conversion ROI';
+
+        // 1. Language Detection
+        $isHindiScript = (bool)preg_match('/[\x{0900}-\x{097F}]/u', $msg);
+        $isMarathiWords = (bool)preg_match('/\b(aahe|namaskar|kay|aamhi|mahiti|kiti|dhanyawad)\b/i', $msg);
+        $isHinglish = (bool)preg_match('/\b(aap|kya|bataiye|hai|kaise|kitna|mujhe|chahiye|karna|hoga|batao)\b/i', $msg);
+
+        $lang = 'en';
+        if ($isHindiScript) {
+            $lang = $isMarathiWords ? 'mr' : 'hi';
+        } elseif ($isMarathiWords) {
+            $lang = 'mr';
+        } elseif ($isHinglish) {
+            $lang = 'hinglish';
+        }
+
+        // 2. Intent Detection
+        $isPricing = (bool)preg_match('/\b(price|pricing|cost|charge|charges|fee|fees|rate|kitna|paisa|paise|kharcha|kiti)\b/i', $msg);
+        $isMeeting = (bool)preg_match('/\b(call|talk|meeting|meet|discuss|zoom|phone|baat|bolna|slot)\b/i', $msg);
+        $isServices = (bool)preg_match('/\b(service|services|what do you do|help|details|detail|kaam|karya|workflow|system|demo)\b/i', $msg);
+
+        // 3. Response Generation
+        if ($lang === 'hi') {
+            if ($isPricing) {
+                $reply = "नमस्ते! संपर्क करने के लिए धन्यवाद। हमारा निवेश मुख्य रूप से आरओआई और आपके व्यवसाय के पैमाने पर निर्भर करता है, जो सामान्यतः {$pricing} के बीच रहता है। क्या मैं जान सकता हूँ कि आपका व्यवसाय किस क्षेत्र में है, ताकि हम आपके लिए सटीक प्रस्ताव तैयार कर सकें?";
+            } elseif ($isMeeting) {
+                $reply = "नमस्ते! बिल्कुल, हम चर्चा कर सकते हैं। आप अपनी सुविधा अनुसार 10 मिनट की परिचयात्मक कॉल के लिए समय चुन सकते हैं। क्या कल दोपहर 3 बजे या शाम 5 बजे बात करना आपके लिए सुविधाजनक रहेगा?";
+            } else {
+                $reply = "नमस्ते! {$myBusiness} में आपका स्वागत है। हम व्यवसायों के लिए {$offering} प्रदान करते हैं। {$usp}। क्या आप अपने वर्तमान व्यवसाय और प्राथमिक लक्ष्य के बारे में संक्षेप में बता सकते हैं?";
+            }
+        } elseif ($lang === 'mr') {
+            if ($isPricing) {
+                $reply = "नमस्कार! संपर्क केल्याबद्दल धन्यवाद. आमची गुंतवणूक प्रामुख्याने आपल्या व्यवसायाच्या व्याप्तीवर अवलंबून असते, जी सामान्यतः {$pricing} दरम्यान असते. आपल्या व्यवसायाचे स्वरूप काय आहे, हे सांगू शकाल का?";
+            } elseif ($isMeeting) {
+                $reply = "नमस्कार! नक्कीच, आपण सविस्तर चर्चा करू शकतो. उद्या दुपारी ३ वाजता किंवा सायंकाळी ५ वाजता १० मिनिटांच्या कॉलसाठी वेळ देणे सोयीचे होईल का?";
+            } else {
+                $reply = "नमस्कार! {$myBusiness} मध्ये आपले स्वागत आहे. आम्ही व्यवसायांसाठी {$offering} पुरवतो. {$usp}. आपल्या व्यवसायाची प्राथमिक गरज काय आहे?";
+            }
+        } elseif ($lang === 'hinglish') {
+            if ($isPricing) {
+                $reply = "Hello! Thanks for reaching out. Hamara investment model directly ROI aur aapke business scale par depend karta hai ({$pricing}). Aapka business kis niche/city mein hai taaki exact projection share kar sakoon?";
+            } elseif ($isMeeting) {
+                $reply = "Great! Bilkul connect kar sakte hain. Kya kal afternoon 3 PM ya evening 5 PM par 10-minute ki quick introductory call aapke liye convenient rahegi?";
+            } else {
+                $reply = "Hi! {$myBusiness} mein welcome. Hum businesses ke liye {$offering} build karte hain. {$usp}. Aap abhi kis type ke clients target kar rahe hain?";
+            }
+        } else {
+            // English default
+            if ($isPricing) {
+                $reply = "Hello! Thank you for reaching out to {$myBusiness}. Our solutions typically range within {$pricing}, directly tied to guaranteed client conversion ROI. To share an exact teardown, could you tell me a little about your business niche and location?";
+            } elseif ($isMeeting) {
+                $reply = "Great to hear from you! I'd be happy to discuss. Would you be open for a quick 10-minute discovery call tomorrow at 3:00 PM or 5:00 PM?";
+            } else {
+                $reply = "Hi! Welcome to {$myBusiness}. We specialize in {$offering}. {$usp}. Could you share your primary business category so I can share a relevant case study video?";
+            }
+        }
+
+        return [
+            'reply' => $reply,
+            'language' => $lang,
+            'intent' => $isPricing ? 'pricing' : ($isMeeting ? 'meeting' : ($isServices ? 'services' : 'general'))
         ];
     }
 }
