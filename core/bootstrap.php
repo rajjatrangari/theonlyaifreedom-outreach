@@ -157,6 +157,7 @@ function db(): PDO {
                 PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::ATTR_TIMEOUT => 3,
             ]);
+            $pdo->exec("SET NAMES utf8mb4");
             migrate_database($pdo, 'mysql');
             return $pdo;
         } catch (Throwable $e) {

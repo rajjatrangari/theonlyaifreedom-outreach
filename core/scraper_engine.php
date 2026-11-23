@@ -188,42 +188,57 @@ class ScraperEngine {
         ]);
 
         if ($existing) {
-            // Update enrichment
+            // Update enrichment in PHP cleanly to prevent MySQL collation mismatch
+            $dmName = !empty($l['decision_maker_name']) ? $l['decision_maker_name'] : ($existing['decision_maker_name'] ?? '');
+            $dmTitle = !empty($l['decision_maker_title']) ? $l['decision_maker_title'] : ($existing['decision_maker_title'] ?? 'Founder & Managing Director');
+            $website = !empty($l['website']) ? $l['website'] : ($existing['website'] ?? '');
+            $phone = !empty($l['phone']) ? $l['phone'] : ($existing['phone'] ?? '');
+            $whatsapp = !empty($l['whatsapp']) ? $l['whatsapp'] : ($existing['whatsapp'] ?? '');
+            $email = !empty($l['email']) ? $l['email'] : ($existing['email'] ?? '');
+            $dmEmail = !empty($l['decision_maker_email']) ? $l['decision_maker_email'] : ($existing['decision_maker_email'] ?? $email);
+            $dmPhone = !empty($l['decision_maker_phone']) ? $l['decision_maker_phone'] : ($existing['decision_maker_phone'] ?? ($whatsapp ?: $phone));
+            $linkedin = !empty($l['linkedin_url']) ? $l['linkedin_url'] : ($existing['linkedin_url'] ?? '');
+            $dmLinkedin = !empty($l['decision_maker_linkedin']) ? $l['decision_maker_linkedin'] : ($existing['decision_maker_linkedin'] ?? $linkedin);
+            $instagram = !empty($l['instagram_url']) ? $l['instagram_url'] : ($existing['instagram_url'] ?? '');
+            $youtube = !empty($l['youtube_url']) ? $l['youtube_url'] : ($existing['youtube_url'] ?? '');
+            $twitter = !empty($l['twitter_url']) ? $l['twitter_url'] : ($existing['twitter_url'] ?? '');
+            $facebook = !empty($l['facebook_url']) ? $l['facebook_url'] : ($existing['facebook_url'] ?? '');
+
             q("UPDATE leads SET
-                decision_maker_name = COALESCE(NULLIF(?, ''), decision_maker_name),
-                decision_maker_title = COALESCE(NULLIF(?, ''), decision_maker_title),
-                website = COALESCE(NULLIF(?, ''), website),
-                phone = COALESCE(NULLIF(?, ''), phone),
-                whatsapp = COALESCE(NULLIF(?, ''), whatsapp),
-                email = COALESCE(NULLIF(?, ''), email),
-                decision_maker_email = COALESCE(NULLIF(?, ''), decision_maker_email),
-                decision_maker_phone = COALESCE(NULLIF(?, ''), decision_maker_phone),
-                linkedin_url = COALESCE(NULLIF(?, ''), linkedin_url),
-                decision_maker_linkedin = COALESCE(NULLIF(?, ''), decision_maker_linkedin),
-                instagram_url = COALESCE(NULLIF(?, ''), instagram_url),
-                youtube_url = COALESCE(NULLIF(?, ''), youtube_url),
-                twitter_url = COALESCE(NULLIF(?, ''), twitter_url),
-                facebook_url = COALESCE(NULLIF(?, ''), facebook_url),
+                decision_maker_name = ?,
+                decision_maker_title = ?,
+                website = ?,
+                phone = ?,
+                whatsapp = ?,
+                email = ?,
+                decision_maker_email = ?,
+                decision_maker_phone = ?,
+                linkedin_url = ?,
+                decision_maker_linkedin = ?,
+                instagram_url = ?,
+                youtube_url = ?,
+                twitter_url = ?,
+                facebook_url = ?,
                 qualification_score = ?,
                 paying_capacity_tier = ?,
                 is_qualified = ?,
                 qualification_reasons = ?,
                 updated_at = ?
                WHERE id = ?", [
-                $l['decision_maker_name'] ?? '',
-                $l['decision_maker_title'] ?? 'Founder & Managing Director',
-                $l['website'] ?? '',
-                $l['phone'] ?? '',
-                $l['whatsapp'] ?? '',
-                $l['email'] ?? '',
-                $l['decision_maker_email'] ?? ($l['email'] ?? ''),
-                $l['decision_maker_phone'] ?? ($l['whatsapp'] ?? ($l['phone'] ?? '')),
-                $l['linkedin_url'] ?? '',
-                $l['decision_maker_linkedin'] ?? ($l['linkedin_url'] ?? ''),
-                $l['instagram_url'] ?? '',
-                $l['youtube_url'] ?? '',
-                $l['twitter_url'] ?? '',
-                $l['facebook_url'] ?? '',
+                $dmName,
+                $dmTitle,
+                $website,
+                $phone,
+                $whatsapp,
+                $email,
+                $dmEmail,
+                $dmPhone,
+                $linkedin,
+                $dmLinkedin,
+                $instagram,
+                $youtube,
+                $twitter,
+                $facebook,
                 $l['qualification_score'] ?? 80,
                 $l['paying_capacity_tier'] ?? 'High / Enterprise',
                 $l['is_qualified'] ?? 1,
