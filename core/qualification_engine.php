@@ -5,8 +5,8 @@ declare(strict_types=1);
 class QualificationEngine {
 
     /**
-     * Scores a lead based on commercial viability, verified contactability,
-     * paying capacity signals, and online maturity.
+     * Evaluates commercial maturity, verified contactability,
+     * paying capacity signals, and online footprint.
      * Returns score (0-100), tier, is_qualified flag, and explanatory badges.
      */
     public static function evaluate(array $lead, int $minThreshold = 70): array {
@@ -14,20 +14,27 @@ class QualificationEngine {
         $reasons = [];
         $flags = [];
 
-        // 1. Domain & Official Website Analysis (Max 25 pts)
+        // 1. Live Domain & Website Analysis (Max 25 pts)
         $website = trim($lead['website'] ?? '');
         if (!empty($website)) {
             $parsedUrl = parse_url($website);
             $host = strtolower($parsedUrl['host'] ?? $website);
+            $host = preg_replace('/:\d+$/', '', $host);
 
-            // Penalize free blogging subdomains (low paying capacity indicator)
+            // Reject free blogging subdomains (low paying capacity indicator)
             $isFreeDomain = preg_match('/\.(wixsite|wordpress|blogspot|weebly|jimdo|carrd)\./i', $host);
             if ($isFreeDomain) {
                 $score += 5;
-                $flags[] = 'Free hosting domain (Low budget signal)';
+                $flags[] = 'Free hosting platform (Low commercial budget signal)';
             } else {
-                $score += 25;
-                $reasons[] = 'Commercial custom domain & active web presence (+25)';
+                // Live DNS verification
+                $resolves = @checkdnsrr($host, 'A') || @checkdnsrr($host, 'AAAA');
+                if ($resolves) {
+                    $score += 25;
+                    $reasons[] = 'Commercial custom domain & live DNS verified (+25)';
+                } else {
+                    $flags[] = 'Domain DNS failed to resolve (NXDOMAIN / Inactive) (-25)';
+                }
             }
         } else {
             $flags[] = 'No verified website (-25)';
@@ -42,46 +49,51 @@ class QualificationEngine {
             $flags[] = 'Missing or unverified WhatsApp (-25)';
         }
 
-        // 3. Multi-Channel Social Footprint (Max 25 pts)
+        // 3. Multi-Channel Social Footprint & Brand Proof (Max 25 pts)
         $socialCount = 0;
         if (!empty($lead['linkedin_url'])) {
-            $score += 10;
-            $socialCount++;
-            $reasons[] = 'Active LinkedIn Business Profile (+10)';
-        }
-        if (!empty($lead['instagram_url'])) {
             $score += 8;
             $socialCount++;
-            $reasons[] = 'Active Instagram Business Profile (+8)';
+            $reasons[] = 'Active LinkedIn Company Profile (+8)';
+        }
+        if (!empty($lead['instagram_url'])) {
+            $score += 7;
+            $socialCount++;
+            $reasons[] = 'Active Instagram Business Profile (+7)';
+        }
+        if (!empty($lead['youtube_url'])) {
+            $score += 5;
+            $socialCount++;
+            $reasons[] = 'Official YouTube Channel (+5)';
         }
         if (!empty($lead['facebook_url'])) {
-            $score += 4;
-            $socialCount++;
-        }
-        if (!empty($lead['twitter_url'])) {
             $score += 3;
             $socialCount++;
         }
+        if (!empty($lead['twitter_url'])) {
+            $score += 2;
+            $socialCount++;
+        }
         if ($socialCount >= 2) {
-            $reasons[] = 'Multi-channel social proof & brand footprint';
+            $reasons[] = sprintf('Multi-channel brand footprint (%d active social profiles)', $socialCount);
         }
 
-        // 4. Commercial Reputation & Reviews (Max 25 pts)
+        // 4. Commercial Reviews & Customer Cashflow Proof (Max 25 pts)
         $reviews = (int)($lead['reviews_count'] ?? 0);
         $rating = (float)($lead['rating'] ?? 0.0);
 
         if ($reviews >= 20 && $rating >= 4.0) {
             $score += 25;
-            $reasons[] = sprintf('Strong commercial reviews: %d reviews (%.1f★) (+25)', $reviews, $rating);
+            $reasons[] = sprintf('Strong commercial proof: %d reviews (%.1f★) (+25)', $reviews, $rating);
         } elseif ($reviews >= 5) {
             $score += 15;
             $reasons[] = sprintf('Established commercial presence: %d reviews (%.1f★) (+15)', $reviews, $rating);
         } elseif (!empty($lead['address']) || !empty($lead['google_maps_url'])) {
             $score += 10;
-            $reasons[] = 'Verified physical business address & Maps presence (+10)';
+            $reasons[] = 'Verified physical commercial premises & Google Maps (+10)';
         }
 
-        // Direct Email bonus
+        // Direct Corporate Email Bonus
         if (!empty($lead['email']) && strpos($lead['email'], '@') !== false) {
             if (!preg_match('/@(gmail|yahoo|hotmail|outlook)\.com$/i', $lead['email'])) {
                 $score = min(100, $score + 5);
@@ -111,7 +123,7 @@ class QualificationEngine {
             'is_qualified' => $isQualified ? 1 : 0,
             'reasons' => $reasons,
             'flags' => $flags,
-            'badge_color' => $finalScore >= 85 ? 'emerald' : ($finalScore >= 70 ? 'blue' : ($finalScore >= 50 ? 'amber' : 'rose')),
+            'badge_color' => $finalScore >= 85 ? 'gold' : ($finalScore >= 70 ? 'blue' : ($finalScore >= 50 ? 'amber' : 'rose')),
         ];
     }
 
@@ -133,7 +145,7 @@ class QualificationEngine {
     }
 
     /**
-     * Generates a direct WhatsApp click-to-chat URL with optional pre-filled message
+     * Generates a direct WhatsApp click-to-chat URL with pre-filled message
      */
     public static function buildWhatsAppUrl(string $phone, string $message = ''): string {
         $clean = preg_replace('/[^\d]/', '', self::cleanPhone($phone));

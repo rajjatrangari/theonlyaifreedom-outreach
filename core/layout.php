@@ -27,7 +27,7 @@ function render_layout(string $title, string $activePage, string $content, ?arra
         'onboarding'=> ['label' => 'My Offering & ICP', 'url' => '/onboarding.php', 'icon' => 'briefcase'],
     ];
 ?><!DOCTYPE html>
-<html lang="en" class="dark h-full bg-[#07080c] text-[#f4f1ea] antialiased">
+<html lang="en" class="h-full antialiased">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,6 +39,7 @@ function render_layout(string $title, string $activePage, string $content, ?arra
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="/assets/css/app.css?v=2">
+    <script src="/assets/js/theme.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -66,7 +67,7 @@ function render_layout(string $title, string $activePage, string $content, ?arra
         }
     </script>
 </head>
-<body class="h-full flex overflow-hidden font-sans bg-[#07080c] text-[#f4f1ea]">
+<body class="h-full flex overflow-hidden font-sans">
 
     <!-- Ambient Glowing Background (Signature The Only AI Freedom Aesthetic) -->
     <div class="ambient" aria-hidden="true"></div>
@@ -168,6 +169,22 @@ function render_layout(string $title, string $activePage, string $content, ?arra
 
             <!-- Topbar Utilities -->
             <div class="flex items-center gap-3">
+                <!-- Theme Switcher (Auto, Light, Dark) -->
+                <div class="flex items-center p-1 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs">
+                    <button type="button" data-theme-btn="auto" onclick="setAppTheme('auto')" class="px-2.5 py-1 rounded-lg transition flex items-center gap-1.5 border border-transparent" title="Auto: Follow System Theme">
+                        <i data-lucide="laptop" class="w-3.5 h-3.5"></i>
+                        <span class="hidden md:inline text-[11px]">Auto</span>
+                    </button>
+                    <button type="button" data-theme-btn="light" onclick="setAppTheme('light')" class="px-2.5 py-1 rounded-lg transition flex items-center gap-1.5 border border-transparent" title="Light: Champagne Cream Theme">
+                        <i data-lucide="sun" class="w-3.5 h-3.5"></i>
+                        <span class="hidden md:inline text-[11px]">Light</span>
+                    </button>
+                    <button type="button" data-theme-btn="dark" onclick="setAppTheme('dark')" class="px-2.5 py-1 rounded-lg transition flex items-center gap-1.5 border border-transparent" title="Dark: Obsidian Night Theme">
+                        <i data-lucide="moon" class="w-3.5 h-3.5"></i>
+                        <span class="hidden md:inline text-[11px]">Dark</span>
+                    </button>
+                </div>
+
                 <a href="/onboarding.php" class="text-xs text-[#a3a6b0] hover:text-white bg-[#11141c] hover:bg-[#161a24] border border-white/[0.08] px-3.5 py-1.5 rounded-xl transition flex items-center gap-2">
                     <i data-lucide="briefcase" class="w-3.5 h-3.5 text-[#d9b46c]"></i>
                     <span>Offer: <strong class="text-[#f4f1ea]"><?= h(clip($user['business_name'] ?: 'Configure Profile', 20)) ?></strong></span>

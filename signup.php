@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?><!DOCTYPE html>
-<html lang="en" class="dark h-full bg-[#07080c] text-[#f4f1ea] antialiased">
+<html lang="en" class="h-full antialiased">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -83,8 +83,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="/assets/css/app.css?v=2">
+    <script src="/assets/js/theme.js"></script>
 </head>
-<body class="h-full flex items-center justify-center p-4 bg-[#07080c] font-sans">
+<body class="h-full flex items-center justify-center p-4 font-sans">
     
     <!-- Ambient Background -->
     <div class="ambient" aria-hidden="true"></div>

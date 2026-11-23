@@ -1,7 +1,42 @@
 /* ==========================================================
    Outreach AI Freedom — The Only AI Freedom Theme
-   Obsidian (#07080c) + Champagne Gold (#d9b46c) + Emerald Glow
+   Auto / Dark (Obsidian #07080c) / Light (Champagne Cream #f7f3ec)
    ========================================================== */
+
+:root {
+    --bg: #07080c;
+    --bg-surface: #11141c;
+    --bg-surface-2: #161a24;
+    --border-line: rgba(255, 255, 255, 0.08);
+    --border-line-strong: rgba(255, 255, 255, 0.16);
+    --text-primary: #f4f1ea;
+    --text-muted: #a3a6b0;
+    --text-dim: #6e7280;
+    --gold: #d9b46c;
+    --gold-light: #f3dca4;
+    --gold-deep: #a9823c;
+    --emerald: #10b981;
+}
+
+html[data-mode="light"] {
+    color-scheme: light;
+    --bg: #f7f3ec;
+    --bg-surface: #ffffff;
+    --bg-surface-2: #faf7f1;
+    --border-line: rgba(40, 30, 10, 0.12);
+    --border-line-strong: rgba(40, 30, 10, 0.22);
+    --text-primary: #19150e;
+    --text-muted: #57524a;
+    --text-dim: #7a7468;
+    --gold: #8f6a28;
+    --gold-light: #7a5a1f;
+    --gold-deep: #6b4e18;
+}
+
+html, body {
+    background-color: var(--bg);
+    color: var(--text-primary);
+}
 
 @layer utilities {
     .custom-scroll::-webkit-scrollbar {
@@ -15,8 +50,11 @@
         background: rgba(255, 255, 255, 0.12);
         border-radius: 9999px;
     }
+    html[data-mode="light"] .custom-scroll::-webkit-scrollbar-thumb {
+        background: rgba(40, 30, 10, 0.18);
+    }
     .custom-scroll::-webkit-scrollbar-thumb:hover {
-        background: rgba(217, 180, 108, 0.4);
+        background: rgba(217, 180, 108, 0.5);
     }
 }
 
@@ -55,6 +93,15 @@
     left: -160px;
 }
 
+html[data-mode="light"] .ambient::before {
+    opacity: 0.15;
+    background: #e2c58a;
+}
+html[data-mode="light"] .ambient::after {
+    opacity: 0.10;
+    background: #9fd6c2;
+}
+
 .grain {
     position: fixed;
     inset: 0;
@@ -71,13 +118,19 @@
     font-weight: 800;
     letter-spacing: -0.01em;
     transition: all 0.25s ease;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .btn-gold-cta:hover {
     filter: brightness(1.08);
     transform: translateY(-1px);
     box-shadow: 0 8px 30px rgba(217, 180, 108, 0.35);
+}
+
+html[data-mode="light"] .btn-gold-cta {
+    background: linear-gradient(135deg, #e5c05d 0%, #d4af37 45%, #b38a22 100%);
+    color: #111 !important;
+    box-shadow: 0 4px 18px rgba(180, 140, 40, 0.25);
 }
 
 /* Glass Panels & Cards */
@@ -102,9 +155,126 @@
     box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.8), 0 0 25px -5px rgba(217, 180, 108, 0.15);
 }
 
+/* Light Mode Overrides for Panels & Cards */
+html[data-mode="light"] .glass-panel {
+    background: rgba(255, 255, 255, 0.88);
+    border-color: rgba(40, 30, 10, 0.12);
+    box-shadow: 0 10px 30px -10px rgba(60, 45, 15, 0.08);
+}
+
+html[data-mode="light"] .glass-card {
+    background: #ffffff;
+    border-color: rgba(40, 30, 10, 0.12);
+    box-shadow: 0 4px 20px rgba(60, 45, 15, 0.06);
+}
+
+html[data-mode="light"] .glass-card:hover {
+    border-color: rgba(143, 106, 40, 0.4);
+    box-shadow: 0 14px 34px -8px rgba(60, 45, 15, 0.15);
+}
+
+html[data-mode="light"] body {
+    background: #f7f3ec;
+    color: #19150e;
+}
+
+html[data-mode="light"] aside#sidebar {
+    background: #f0ebe1;
+    border-right-color: rgba(40, 30, 10, 0.12);
+}
+
+html[data-mode="light"] header {
+    background: rgba(247, 243, 236, 0.88);
+    border-bottom-color: rgba(40, 30, 10, 0.12);
+}
+
+html[data-mode="light"] .text-white {
+    color: #19150e !important;
+}
+
+html[data-mode="light"] .text-slate-100,
+html[data-mode="light"] .text-slate-200 {
+    color: #2b2519 !important;
+}
+
+html[data-mode="light"] .text-slate-300,
+html[data-mode="light"] .text-slate-400 {
+    color: #57524a !important;
+}
+
+html[data-mode="light"] .bg-slate-800,
+html[data-mode="light"] .bg-slate-800\/60,
+html[data-mode="light"] .bg-slate-800\/80 {
+    background-color: #f0ebe0 !important;
+}
+
+html[data-mode="light"] .bg-slate-900,
+html[data-mode="light"] .bg-slate-900\/60,
+html[data-mode="light"] .bg-slate-900\/70,
+html[data-mode="light"] .bg-slate-900\/90,
+html[data-mode="light"] .bg-slate-950,
+html[data-mode="light"] .bg-slate-950\/40,
+html[data-mode="light"] .bg-slate-950\/80,
+html[data-mode="light"] .bg-\[\#0c0e14\],
+html[data-mode="light"] .bg-\[\#0c0e14\]\/80,
+html[data-mode="light"] .bg-\[\#0c0e14\]\/95,
+html[data-mode="light"] .bg-\[\#11141c\],
+html[data-mode="light"] .bg-\[\#161a24\],
+html[data-mode="light"] .bg-\[\#07080c\]\/60,
+html[data-mode="light"] .bg-\[\#07080c\]\/80 {
+    background-color: #faf6ef !important;
+}
+
+html[data-mode="light"] .border-slate-800,
+html[data-mode="light"] .border-slate-800\/60,
+html[data-mode="light"] .border-slate-800\/80,
+html[data-mode="light"] .border-slate-700,
+html[data-mode="light"] .border-slate-700\/50,
+html[data-mode="light"] .border-slate-700\/60,
+html[data-mode="light"] .border-slate-700\/80,
+html[data-mode="light"] .border-white\/\[0\.08\],
+html[data-mode="light"] .border-white\/\[0\.12\] {
+    border-color: rgba(40, 30, 10, 0.12) !important;
+}
+
+html[data-mode="light"] .divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]),
+html[data-mode="light"] .divide-slate-800 > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgba(40, 30, 10, 0.10) !important;
+}
+
+html[data-mode="light"] .bg-white\/\[0\.04\],
+html[data-mode="light"] .bg-white\/\[0\.06\] {
+    background-color: rgba(40, 30, 10, 0.05) !important;
+}
+
+html[data-mode="light"] #modalBox {
+    background-color: #ffffff !important;
+    border-color: rgba(40, 30, 10, 0.16) !important;
+    box-shadow: 0 25px 50px -12px rgba(40, 30, 10, 0.25) !important;
+}
+
+html[data-mode="light"] tr:hover {
+    background-color: rgba(217, 180, 108, 0.08) !important;
+}
+
+html[data-mode="light"] input,
+html[data-mode="light"] select,
+html[data-mode="light"] textarea {
+    background-color: #ffffff !important;
+    color: #19150e !important;
+    border-color: rgba(40, 30, 10, 0.18) !important;
+}
+
 /* Gold text gradient */
 .gold-text {
     background: linear-gradient(135deg, #f3dca4 0%, #d9b46c 45%, #a9823c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+html[data-mode="light"] .gold-text {
+    background: linear-gradient(110deg, #7a5a1f 0%, #a8803a 40%, #8a6426 70%, #6b4e18 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

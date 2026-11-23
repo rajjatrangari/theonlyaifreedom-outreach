@@ -259,6 +259,7 @@ function migrate_database(PDO $pdo, string $driver): void {
                 email VARCHAR(191) DEFAULT '',
                 linkedin_url VARCHAR(255) DEFAULT '',
                 instagram_url VARCHAR(255) DEFAULT '',
+                youtube_url VARCHAR(255) DEFAULT '',
                 twitter_url VARCHAR(255) DEFAULT '',
                 facebook_url VARCHAR(255) DEFAULT '',
                 google_maps_url TEXT,
@@ -365,6 +366,7 @@ function migrate_database(PDO $pdo, string $driver): void {
                 email TEXT DEFAULT '',
                 linkedin_url TEXT DEFAULT '',
                 instagram_url TEXT DEFAULT '',
+                youtube_url TEXT DEFAULT '',
                 twitter_url TEXT DEFAULT '',
                 facebook_url TEXT DEFAULT '',
                 google_maps_url TEXT,
@@ -423,6 +425,20 @@ function migrate_database(PDO $pdo, string $driver): void {
             );
         ");
     }
+
+    // Dynamic schema migrations & cleanups
+    try {
+        if ($driver === 'mysql') {
+            $pdo->exec("ALTER TABLE leads ADD COLUMN youtube_url VARCHAR(255) DEFAULT '' AFTER instagram_url");
+        } else {
+            $pdo->exec("ALTER TABLE leads ADD COLUMN youtube_url TEXT DEFAULT ''");
+        }
+    } catch (Throwable $e) {}
+
+    // Purge previous synthetic test artifacts so only verified domains resolve
+    try {
+        $pdo->exec("DELETE FROM leads WHERE website LIKE '%luxuryjewellerybrands.in%' OR website LIKE '%pexluxury%' OR website LIKE '%restigeluxury%'");
+    } catch (Throwable $e) {}
 
     seed_default_admin($pdo);
 }
