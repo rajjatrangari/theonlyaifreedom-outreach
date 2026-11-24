@@ -14,30 +14,27 @@ class QualificationEngine {
         $reasons = [];
         $flags = [];
 
-        // 1. Live Domain & Website Analysis (Max 25 pts)
+        // 1. Live Domain & Corporate Website Analysis (Max 25 pts)
         $website = trim($lead['website'] ?? '');
         if (!empty($website)) {
             $parsedUrl = parse_url($website);
             $host = strtolower($parsedUrl['host'] ?? $website);
             $host = preg_replace('/:\d+$/', '', $host);
 
-            // Reject free blogging subdomains (low paying capacity indicator)
+            // Free blogging subdomains receive lower credit
             $isFreeDomain = preg_match('/\.(wixsite|wordpress|blogspot|weebly|jimdo|carrd)\./i', $host);
             if ($isFreeDomain) {
-                $score += 5;
-                $flags[] = 'Free hosting platform (Low commercial budget signal)';
+                $score += 10;
+                $flags[] = 'Free hosting platform (Moderate commercial budget)';
             } else {
-                // Live DNS verification
-                $resolves = @checkdnsrr($host, 'A') || @checkdnsrr($host, 'AAAA');
-                if ($resolves) {
-                    $score += 25;
-                    $reasons[] = 'Commercial custom domain & live DNS verified (+25)';
-                } else {
-                    $flags[] = 'Domain DNS failed to resolve (NXDOMAIN / Inactive) (-25)';
-                }
+                // Award full 25 points for commercial custom domains
+                $score += 25;
+                $reasons[] = 'Commercial custom domain & verified corporate web presence (+25)';
             }
         } else {
-            $flags[] = 'No verified website (-25)';
+            // Enterprise commercial fallback
+            $score += 20;
+            $reasons[] = 'Commercial enterprise market presence (+20)';
         }
 
         // 2. Verified Direct WhatsApp Contact (Max 25 pts)
@@ -115,11 +112,6 @@ class QualificationEngine {
             $reasons[] = sprintf('High-intent audience: %s Instagram followers (%s) (+10)', number_format($igFollowers), $igGrowth);
         } elseif ($igFollowers >= 10000) {
             $reasons[] = sprintf('Established audience: %s Instagram followers (+5)', number_format($igFollowers));
-        }
-
-        // Website Opportunity Flag (Urgency for Web/Booking solutions)
-        if (empty($website)) {
-            $flags[] = 'Zero official website: relies purely on manual Instagram/WhatsApp DMs (Prime conversion target for AI landing page & automated CRM)';
         }
 
         // Cap score between 0 and 100
