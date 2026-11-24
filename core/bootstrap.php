@@ -741,10 +741,6 @@ function migrate_database(PDO $pdo, string $driver): void {
                 $tier,
                 $lf['id']
             ]);
-        } else {
-            // Always ensure password is in sync for seamless login
-            $pwdHash = password_hash('Outreach_Freedom_2026!', PASSWORD_DEFAULT);
-            $pdo->exec("UPDATE users SET password_hash = '{$pwdHash}' WHERE email = 'rajjat@theonlyaifreedom.in'");
         }
     } catch (Throwable $e) {}
 
