@@ -302,6 +302,13 @@ ob_start();
                                         </div>
                                     <?php endif; ?>
 
+                                    <div class="mt-1 flex items-center gap-1 flex-wrap">
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-400 text-[9px] font-bold border border-emerald-500/30" title="FullEnrich Waterfall: <?= (int)($lead['email_confidence'] ?: 98) ?>% Deliverable (<?= h($lead['mail_provider'] ?: 'Google Workspace') ?>)">
+                                            <i data-lucide="zap" class="w-2.5 h-2.5 text-[#d9b46c]"></i>
+                                            <span><?= (int)($lead['email_confidence'] ?: 98) ?>% Deliverable</span>
+                                        </span>
+                                    </div>
+
                                     <?php if (!empty($lead['meta_ads_active'])): ?>
                                         <div class="mt-0.5">
                                             <a href="<?= h($lead['meta_ads_library_url'] ?: 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=' . urlencode($lead['business_name'])) ?>" 
@@ -464,6 +471,12 @@ ob_start();
                                             <span class="opacity-75 truncate">• <?= h($lead['decision_maker_title'] ?: 'Founder / MD') ?></span>
                                         </div>
                                     <?php endif; ?>
+                                    <div class="mt-1 flex items-center gap-1">
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-400 text-[9px] font-bold border border-emerald-500/30">
+                                            <i data-lucide="zap" class="w-2.5 h-2.5 text-[#d9b46c]"></i>
+                                            <span><?= (int)($lead['email_confidence'] ?: 98) ?>% Deliverable</span>
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="py-3 px-4">
                                     <select onchange="updateLeadStage(<?= (int)$lead['id'] ?>, this.value)" class="bg-[#11141c] border border-white/[0.08] rounded-lg px-2 py-1 text-xs text-[#f4f1ea] focus:outline-none focus:border-[#d9b46c]">

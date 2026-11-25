@@ -8,6 +8,7 @@ require_once __DIR__ . '/core/ai_generator.php';
 require_once __DIR__ . '/core/qualification_engine.php';
 require_once __DIR__ . '/core/whatsapp_service.php';
 require_once __DIR__ . '/core/email_service.php';
+require_once __DIR__ . '/core/waterfall_enricher.php';
 
 $action = $_GET['action'] ?? '';
 $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
@@ -568,6 +569,108 @@ switch ($action) {
         json_response([
             'status' => 'success',
             'message' => 'Cleaned mock records and restored live verified leads.'
+        ]);
+        break;
+
+    // 12B. FullEnrich-Grade Single Lead Waterfall Enrichment
+    case 'waterfall_enrich_lead':
+        $leadId = (int)($input['lead_id'] ?? 0);
+        $lead = null;
+        if ($leadId > 0) {
+            $lead = one("SELECT * FROM leads WHERE id = ? AND user_id = ?", [$leadId, $user['id']]);
+        }
+        if (!$lead) {
+            $lead = $input['lead'] ?? [];
+        }
+
+        if (empty($lead['business_name'])) {
+            json_response(['status' => 'error', 'message' => 'No valid lead provided for enrichment.'], 400);
+        }
+
+        $enriched = WaterfallEnricher::enrichLead($lead);
+
+        if ($leadId > 0) {
+            q("UPDATE leads SET 
+                email = ?, decision_maker_email = ?, email_deliverability = ?, email_confidence = ?,
+                mail_provider = ?, primary_mx = ?, phone = ?, whatsapp = ?,
+                linkedin_url = ?, decision_maker_linkedin = ?, instagram_url = ?,
+                enrichment_status = 'waterfall_verified', waterfall_tier = ?,
+                qualification_score = ?, paying_capacity_tier = ?, enriched_at = NOW(), updated_at = NOW()
+               WHERE id = ? AND user_id = ?", [
+                $enriched['email'],
+                $enriched['decision_maker_email'],
+                $enriched['email_deliverability'],
+                $enriched['email_confidence'],
+                $enriched['mail_provider'],
+                $enriched['primary_mx'],
+                $enriched['phone'],
+                $enriched['whatsapp'],
+                $enriched['linkedin_url'],
+                $enriched['decision_maker_linkedin'],
+                $enriched['instagram_url'],
+                $enriched['waterfall_tier'],
+                $enriched['qualification_score'],
+                $enriched['paying_capacity_tier'],
+                $leadId,
+                $user['id']
+            ]);
+            $enriched['id'] = $leadId;
+        }
+
+        json_response([
+            'status' => 'success',
+            'lead' => $enriched,
+            'message' => "Successfully waterfall-enriched {$enriched['business_name']} with 4-tier verification."
+        ]);
+        break;
+
+    // 12C. Batch Waterfall Enrichment across CRM Leads
+    case 'batch_waterfall_enrich':
+        $leadIds = $input['lead_ids'] ?? [];
+        $enrichedList = [];
+
+        if (empty($leadIds)) {
+            $leadIds = all("SELECT id FROM leads WHERE user_id = ? ORDER BY id DESC LIMIT 25", [$user['id']]);
+            $leadIds = array_column($leadIds, 'id');
+        }
+
+        foreach ($leadIds as $id) {
+            $lead = one("SELECT * FROM leads WHERE id = ? AND user_id = ?", [(int)$id, $user['id']]);
+            if (!$lead) continue;
+            $enriched = WaterfallEnricher::enrichLead($lead);
+            q("UPDATE leads SET 
+                email = ?, decision_maker_email = ?, email_deliverability = ?, email_confidence = ?,
+                mail_provider = ?, primary_mx = ?, phone = ?, whatsapp = ?,
+                linkedin_url = ?, decision_maker_linkedin = ?, instagram_url = ?,
+                enrichment_status = 'waterfall_verified', waterfall_tier = ?,
+                qualification_score = ?, paying_capacity_tier = ?, enriched_at = NOW(), updated_at = NOW()
+               WHERE id = ? AND user_id = ?", [
+                $enriched['email'],
+                $enriched['decision_maker_email'],
+                $enriched['email_deliverability'],
+                $enriched['email_confidence'],
+                $enriched['mail_provider'],
+                $enriched['primary_mx'],
+                $enriched['phone'],
+                $enriched['whatsapp'],
+                $enriched['linkedin_url'],
+                $enriched['decision_maker_linkedin'],
+                $enriched['instagram_url'],
+                $enriched['waterfall_tier'],
+                $enriched['qualification_score'],
+                $enriched['paying_capacity_tier'],
+                (int)$id,
+                $user['id']
+            ]);
+            $enriched['id'] = (int)$id;
+            $enrichedList[] = $enriched;
+        }
+
+        json_response([
+            'status' => 'success',
+            'count' => count($enrichedList),
+            'leads' => $enrichedList,
+            'message' => "Successfully batch waterfall-enriched " . count($enrichedList) . " leads."
         ]);
         break;
 
